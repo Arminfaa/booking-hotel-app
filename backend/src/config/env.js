@@ -10,6 +10,11 @@ for (const key of required) {
   }
 }
 
+const clientUrls = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
+
 export const env = {
   port: Number(process.env.PORT) || 5000,
   nodeEnv: process.env.NODE_ENV || "development",
@@ -17,7 +22,8 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET,
   accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
   refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
-  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
+  clientUrl: clientUrls[0],
+  clientUrls,
   serviceFeePercent: Number(process.env.SERVICE_FEE_PERCENT || 10),
   taxPercent: Number(process.env.TAX_PERCENT || 8),
   isProd: process.env.NODE_ENV === "production",
