@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <div className={tw.pageFlush}>
-      <section className="relative grid min-h-[calc(100svh-4.25rem)] items-center overflow-hidden text-white">
+      <section className="relative grid min-h-[calc(100dvh-3.5rem)] items-center overflow-hidden text-white lg:min-h-[calc(100dvh-4.25rem)]">
         <div
           className="absolute inset-0 animate-[fade_0.85s_ease_both] bg-cover bg-center [animation:heroZoom_18s_ease-in-out_alternate_infinite]"
           style={{ backgroundImage: `url(${HERO_IMAGE})` }}
@@ -83,7 +83,7 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <Loader label="Loading featured stays..." />
+            <Loader label="Loading featured stays..." fullPage={false} />
           ) : (
             <div className={tw.hotelGrid}>
               {hotels.map((hotel) => (
@@ -106,7 +106,7 @@ export default function Home() {
                   Search. Check dates. Book with confidence.
                 </Typography.Title>
                 <Typography.Paragraph type="secondary" className="max-w-xl">
-                  Availability is enforced on the server, bookings sync to your trips, and
+                  Availability is enforced on the server, bookings sync to your account, and
                   saved stays stay with your account — not just your browser.
                 </Typography.Paragraph>
               </Col>
@@ -115,7 +115,7 @@ export default function Home() {
                   {[
                     ["01", "Filter by city, dates, and guest count."],
                     ["02", "Review photos, amenities, and map location."],
-                    ["03", "Reserve instantly and manage trips anytime."],
+                    ["03", "Reserve instantly and manage bookings anytime."],
                   ].map(([n, text]) => (
                     <div key={n} className="grid grid-cols-[auto_1fr] items-start gap-4">
                       <span className="font-display text-[1.35rem] font-bold leading-none text-sea">

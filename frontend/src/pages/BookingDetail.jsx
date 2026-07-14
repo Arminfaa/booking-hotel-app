@@ -71,7 +71,7 @@ export default function BookingDetail() {
       <EmptyState
         title="Booking not found"
         message="It may have been removed or you don’t have access."
-        actionLabel="Back to trips"
+        actionLabel="Back to bookings"
         actionTo="/bookings"
       />
     );
@@ -86,7 +86,7 @@ export default function BookingDetail() {
           to="/bookings"
           className="mb-4 inline-flex items-center gap-1.5 font-semibold text-ink-soft hover:text-sea"
         >
-          <ArrowLeftOutlined /> All trips
+          <ArrowLeftOutlined /> All bookings
         </Link>
         <span className={tw.eyebrow}>Confirmation</span>
         <Typography.Title level={1}>{booking.hotel?.title}</Typography.Title>

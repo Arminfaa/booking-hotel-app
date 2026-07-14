@@ -42,7 +42,7 @@ export default function Profile() {
   }
 
   return (
-    <div className={`${tw.page} grid min-h-[calc(100svh-4.25rem-8rem)] items-center`}>
+    <div className={`${tw.page} grid min-h-[calc(100dvh-4.25rem-8rem)] items-center`}>
       <div className={`${tw.container} max-w-[460px]`}>
         <Card
           className="animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove bg-[radial-gradient(500px_220px_at_0%_0%,rgba(94,196,168,0.12),transparent_55%),rgba(15,26,36,0.88)] [&_.ant-card-body]:p-[clamp(1.5rem,4vw,2rem)]"

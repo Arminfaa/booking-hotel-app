@@ -4,7 +4,7 @@ import { tw } from "../../styles/tw";
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-line bg-gradient-to-b from-transparent to-black/28 py-11 pb-8">
+    <footer className="mt-auto border-t border-line bg-gradient-to-b from-transparent to-black/28 py-6">
       <div className={tw.container}>
         <Row gutter={[32, 24]} align="middle" justify="space-between">
           <Col xs={24} md={10}>
@@ -19,7 +19,7 @@ export default function Footer() {
             <div className="flex flex-wrap gap-x-6 gap-y-4">
               {[
                 ["/search", "Explore stays"],
-                ["/bookings", "Your trips"],
+                ["/bookings", "Your bookings"],
                 ["/register", "Host with us"],
               ].map(([to, label]) => (
                 <Link

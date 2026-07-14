@@ -49,12 +49,12 @@ export async function sendBookingConfirmation({ to, booking, hotel }) {
         `Check-out: ${new Date(booking.checkOut).toDateString()}`,
         `Total: $${booking.totalPrice}`,
         `Payment ref: ${booking.paymentRef || "n/a"}`,
-        `Manage trip: ${env.clientUrl}/bookings/${booking._id}`,
+        `Manage booking: ${env.clientUrl}/bookings/${booking._id}`,
       ].join("\n"),
       html: `<p>Your stay at <strong>${hotel.title}</strong> is confirmed.</p>
         <p>${new Date(booking.checkIn).toDateString()} → ${new Date(booking.checkOut).toDateString()}</p>
         <p>Total: <strong>$${booking.totalPrice}</strong></p>
-        <p><a href="${env.clientUrl}/bookings/${booking._id}">View trip</a></p>`,
+        <p><a href="${env.clientUrl}/bookings/${booking._id}">View booking</a></p>`,
     });
 
     const preview = nodemailer.getTestMessageUrl(info);
