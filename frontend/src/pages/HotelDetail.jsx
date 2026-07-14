@@ -212,111 +212,111 @@ export default function HotelDetail() {
               <Typography.Title level={3}>Availability</Typography.Title>
               <OccupancyCalendar hotelId={hotel._id} />
             </section>
-
-            <section className="mb-8">
-              <Typography.Title level={3}>Where you’ll be</Typography.Title>
-              <Typography.Paragraph type="secondary">
-                {hotel.address} · {hotel.city}, {hotel.country}
-              </Typography.Paragraph>
-              <div className={`${tw.surface} overflow-hidden p-2`}>
-                <HotelMap hotels={[hotel]} height={320} />
-              </div>
-            </section>
-
-            <section className="mb-8">
-              <Typography.Title level={3}>Message host</Typography.Title>
-              <Card size="small" className="max-w-xl">
-                <form onSubmit={messageHost}>
-                  <div className={`${tw.field} mb-3`}>
-                    <label htmlFor="host-msg" className={tw.fieldLabel}>
-                      Your message
-                    </label>
-                    <Input.TextArea
-                      id="host-msg"
-                      rows={4}
-                      value={messageBody}
-                      onChange={(e) => setMessageBody(e.target.value)}
-                      required
-                      minLength={2}
-                      placeholder="Ask about check-in, parking, or local tips..."
-                    />
-                  </div>
-                  <Button htmlType="submit">Send message</Button>
-                </form>
-              </Card>
-            </section>
-
-            <section className="mb-8">
-              <Typography.Title level={3}>Guest reviews</Typography.Title>
-              {reviews.length === 0 ? (
-                <Typography.Text type="secondary">No reviews yet.</Typography.Text>
-              ) : (
-                <Space direction="vertical" size="middle" className="w-full">
-                  {reviews.map((review) => (
-                    <Card key={review._id} size="small" className="!bg-paper/45">
-                      <Flex justify="space-between" className="mb-1.5">
-                        <Typography.Text strong>
-                          {review.user?.name || "Guest"}
-                        </Typography.Text>
-                        <Typography.Text>
-                          <StarFilled className="text-sand" /> {review.rating}
-                        </Typography.Text>
-                      </Flex>
-                      <Typography.Paragraph className="!m-0">
-                        {review.comment}
-                      </Typography.Paragraph>
-                    </Card>
-                  ))}
-                </Space>
-              )}
-
-              {isAuthenticated ? (
-                <Card size="small" className="mt-4 max-w-xl">
-                  <Typography.Title level={5}>Leave a review</Typography.Title>
-                  <form onSubmit={submitReview}>
-                    <div className={`${tw.field} mb-3`}>
-                      <label htmlFor="rating" className={tw.fieldLabel}>
-                        Rating
-                      </label>
-                      <Select
-                        id="rating"
-                        size="large"
-                        className="w-full"
-                        value={reviewForm.rating}
-                        onChange={(rating) => setReviewForm((s) => ({ ...s, rating }))}
-                        options={[5, 4, 3, 2, 1].map((n) => ({
-                          value: n,
-                          label: String(n),
-                        }))}
-                      />
-                    </div>
-                    <div className={`${tw.field} mb-3`}>
-                      <label htmlFor="comment" className={tw.fieldLabel}>
-                        Comment
-                      </label>
-                      <Input.TextArea
-                        id="comment"
-                        rows={4}
-                        value={reviewForm.comment}
-                        onChange={(e) =>
-                          setReviewForm((s) => ({ ...s, comment: e.target.value }))
-                        }
-                        required
-                        minLength={5}
-                      />
-                    </div>
-                    <Button type="primary" htmlType="submit" loading={savingReview}>
-                      Publish review
-                    </Button>
-                  </form>
-                </Card>
-              ) : null}
-            </section>
           </Col>
           <Col xs={24} lg={9}>
             <BookingPanel hotel={hotel} initial={initialBooking} />
           </Col>
         </Row>
+
+        <section className="mb-8">
+          <Typography.Title level={3}>Where you’ll be</Typography.Title>
+          <Typography.Paragraph type="secondary">
+            {hotel.address} · {hotel.city}, {hotel.country}
+          </Typography.Paragraph>
+          <div className={`${tw.surface} overflow-hidden p-2`}>
+            <HotelMap hotels={[hotel]} height={420} />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <Typography.Title level={3}>Message host</Typography.Title>
+          <Card size="small" className="max-w-xl">
+            <form onSubmit={messageHost}>
+              <div className={`${tw.field} mb-3`}>
+                <label htmlFor="host-msg" className={tw.fieldLabel}>
+                  Your message
+                </label>
+                <Input.TextArea
+                  id="host-msg"
+                  rows={4}
+                  value={messageBody}
+                  onChange={(e) => setMessageBody(e.target.value)}
+                  required
+                  minLength={2}
+                  placeholder="Ask about check-in, parking, or local tips..."
+                />
+              </div>
+              <Button htmlType="submit">Send message</Button>
+            </form>
+          </Card>
+        </section>
+
+        <section className="mb-8">
+          <Typography.Title level={3}>Guest reviews</Typography.Title>
+          {reviews.length === 0 ? (
+            <Typography.Text type="secondary">No reviews yet.</Typography.Text>
+          ) : (
+            <Space direction="vertical" size="middle" className="w-full">
+              {reviews.map((review) => (
+                <Card key={review._id} size="small" className="!bg-paper/45">
+                  <Flex justify="space-between" className="mb-1.5">
+                    <Typography.Text strong>
+                      {review.user?.name || "Guest"}
+                    </Typography.Text>
+                    <Typography.Text>
+                      <StarFilled className="text-sand" /> {review.rating}
+                    </Typography.Text>
+                  </Flex>
+                  <Typography.Paragraph className="!m-0">
+                    {review.comment}
+                  </Typography.Paragraph>
+                </Card>
+              ))}
+            </Space>
+          )}
+
+          {isAuthenticated ? (
+            <Card size="small" className="mt-4 max-w-xl">
+              <Typography.Title level={5}>Leave a review</Typography.Title>
+              <form onSubmit={submitReview}>
+                <div className={`${tw.field} mb-3`}>
+                  <label htmlFor="rating" className={tw.fieldLabel}>
+                    Rating
+                  </label>
+                  <Select
+                    id="rating"
+                    size="large"
+                    className="w-full"
+                    value={reviewForm.rating}
+                    onChange={(rating) => setReviewForm((s) => ({ ...s, rating }))}
+                    options={[5, 4, 3, 2, 1].map((n) => ({
+                      value: n,
+                      label: String(n),
+                    }))}
+                  />
+                </div>
+                <div className={`${tw.field} mb-3`}>
+                  <label htmlFor="comment" className={tw.fieldLabel}>
+                    Comment
+                  </label>
+                  <Input.TextArea
+                    id="comment"
+                    rows={4}
+                    value={reviewForm.comment}
+                    onChange={(e) =>
+                      setReviewForm((s) => ({ ...s, comment: e.target.value }))
+                    }
+                    required
+                    minLength={5}
+                  />
+                </div>
+                <Button type="primary" htmlType="submit" loading={savingReview}>
+                  Publish review
+                </Button>
+              </form>
+            </Card>
+          ) : null}
+        </section>
       </div>
     </div>
   );

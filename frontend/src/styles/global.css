@@ -140,3 +140,27 @@
 .hotel-map .leaflet-popup-content a {
   @apply font-semibold text-sea;
 }
+
+/* Thin scrollbars aligned with Cove palette */
+.scrollbar-cove {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(94, 196, 168, 0.38) rgba(148, 183, 200, 0.08);
+}
+
+.scrollbar-cove::-webkit-scrollbar {
+  width: 3px;
+}
+
+.scrollbar-cove::-webkit-scrollbar-track {
+  background: rgba(148, 183, 200, 0.06);
+  border-radius: 999px;
+}
+
+.scrollbar-cove::-webkit-scrollbar-thumb {
+  background: rgba(154, 176, 192, 0.32);
+  border-radius: 999px;
+}
+
+.scrollbar-cove::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 196, 168, 0.5);
+}
