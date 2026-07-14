@@ -218,7 +218,7 @@ export default function HotelDetail() {
           </Col>
         </Row>
 
-        <section className="mb-8">
+        <section className="my-8">
           <Typography.Title level={3}>Where you’ll be</Typography.Title>
           <Typography.Paragraph type="secondary">
             {hotel.address} · {hotel.city}, {hotel.country}
