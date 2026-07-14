@@ -22,17 +22,105 @@ export const listHotelValidators = [
 ];
 
 export const createHotelValidators = [
-  body("title").trim().notEmpty(),
-  body("description").trim().notEmpty(),
-  body("city").trim().notEmpty(),
-  body("country").trim().notEmpty(),
-  body("address").trim().notEmpty(),
-  body("longitude").isFloat({ min: -180, max: 180 }),
-  body("latitude").isFloat({ min: -90, max: 90 }),
-  body("images").isArray({ min: 1 }),
-  body("pricePerNight").isFloat({ min: 1 }),
-  body("maxGuests").isInt({ min: 1 }),
-  body("cancellationPolicy").optional().isIn(["flexible", "moderate", "strict"]),
+  body("title").trim().notEmpty().withMessage("Title is required"),
+  body("description").trim().notEmpty().withMessage("Description is required"),
+  body("city").trim().notEmpty().withMessage("City is required"),
+  body("country").trim().notEmpty().withMessage("Country is required"),
+  body("address").trim().notEmpty().withMessage("Address is required"),
+  body("longitude")
+    .isFloat({ min: -180, max: 180 })
+    .withMessage("Longitude must be a number between -180 and 180"),
+  body("latitude")
+    .isFloat({ min: -90, max: 90 })
+    .withMessage("Latitude must be a number between -90 and 90"),
+  body("images")
+    .isArray({ min: 1 })
+    .withMessage("Add at least one image URL"),
+  body("images.*")
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Image URLs cannot be empty"),
+  body("pricePerNight")
+    .isFloat({ min: 1 })
+    .withMessage("Price per night must be at least 1"),
+  body("maxGuests")
+    .isInt({ min: 1 })
+    .withMessage("Max guests must be at least 1"),
+  body("cleaningFee")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Cleaning fee cannot be negative"),
+  body("bedrooms")
+    .optional({ nullable: true })
+    .isInt({ min: 0 })
+    .withMessage("Bedrooms cannot be negative"),
+  body("beds")
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage("Beds must be at least 1"),
+  body("bathrooms")
+    .optional({ nullable: true })
+    .isInt({ min: 0 })
+    .withMessage("Bathrooms cannot be negative"),
+  body("propertyType")
+    .optional()
+    .isIn(["apartment", "house", "villa", "cabin", "loft", "hotel"])
+    .withMessage("Property type must be apartment, house, villa, cabin, loft, or hotel"),
+  body("cancellationPolicy")
+    .optional()
+    .isIn(["flexible", "moderate", "strict"])
+    .withMessage("Cancellation policy must be flexible, moderate, or strict"),
+];
+
+export const updateHotelValidators = [
+  body("title").optional().trim().notEmpty().withMessage("Title cannot be empty"),
+  body("description")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Description cannot be empty"),
+  body("city").optional().trim().notEmpty().withMessage("City cannot be empty"),
+  body("country").optional().trim().notEmpty().withMessage("Country cannot be empty"),
+  body("address").optional().trim().notEmpty().withMessage("Address cannot be empty"),
+  body("longitude")
+    .optional()
+    .isFloat({ min: -180, max: 180 })
+    .withMessage("Longitude must be a number between -180 and 180"),
+  body("latitude")
+    .optional()
+    .isFloat({ min: -90, max: 90 })
+    .withMessage("Latitude must be a number between -90 and 90"),
+  body("images")
+    .optional()
+    .isArray({ min: 1 })
+    .withMessage("Add at least one image URL"),
+  body("images.*")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Image URLs cannot be empty"),
+  body("pricePerNight")
+    .optional()
+    .isFloat({ min: 1 })
+    .withMessage("Price per night must be at least 1"),
+  body("maxGuests")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Max guests must be at least 1"),
+  body("cleaningFee")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Cleaning fee cannot be negative"),
+  body("propertyType")
+    .optional()
+    .isIn(["apartment", "house", "villa", "cabin", "loft", "hotel"])
+    .withMessage("Property type must be apartment, house, villa, cabin, loft, or hotel"),
+  body("cancellationPolicy")
+    .optional()
+    .isIn(["flexible", "moderate", "strict"])
+    .withMessage("Cancellation policy must be flexible, moderate, or strict"),
 ];
 
 export const listHotels = asyncHandler(async (req, res) => {
