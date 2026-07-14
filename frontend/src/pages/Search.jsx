@@ -6,8 +6,8 @@ import toast from "react-hot-toast";
 import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
 import HotelCard from "../components/hotels/HotelCard";
+import { HotelCardSkeletonGrid } from "../components/hotels/HotelCardSkeleton";
 import HotelMap from "../components/hotels/HotelMap";
-import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
 import { tw } from "../styles/tw";
 
@@ -204,11 +204,9 @@ export default function Search() {
           </div>
         </div>
 
-        {loading ? (
-          <Loader label="Searching stays..." fullPage={false} />
-        ) : error ? (
+        {error ? (
           <EmptyState title="Could not load stays" message={error} />
-        ) : hotels.length === 0 ? (
+        ) : !loading && hotels.length === 0 ? (
           <EmptyState
             title="No stays match"
             message="Try another city, wider dates, or fewer filters."
@@ -216,38 +214,44 @@ export default function Search() {
         ) : (
           <Row gutter={[28, 28]}>
             <Col xs={24} lg={14} xl={15}>
-              <Typography.Text type="secondary" className="font-semibold">
-                {pagination.total} stays
-                {pagination.pages > 1
-                  ? ` · page ${pagination.page} of ${pagination.pages}`
-                  : ""}
-              </Typography.Text>
-              <div className={`${tw.hotelGrid} mt-4`}>
-                {hotels.map((hotel) => (
-                  <HotelCard
-                    key={hotel._id}
-                    hotel={hotel}
-                    search={queryString}
-                  />
-                ))}
-              </div>
-              {pagination.pages > 1 ? (
-                <div className="mt-8 flex justify-center">
-                  <Pagination
-                    current={pagination.page}
-                    total={pagination.total}
-                    pageSize={PAGE_SIZE}
-                    onChange={changePage}
-                    showSizeChanger={false}
-                  />
-                </div>
-              ) : null}
+              {loading ? (
+                <HotelCardSkeletonGrid count={10} className="mt-4" />
+              ) : (
+                <>
+                  <Typography.Text type="secondary" className="font-semibold">
+                    {pagination.total} stays
+                    {pagination.pages > 1
+                      ? ` · page ${pagination.page} of ${pagination.pages}`
+                      : ""}
+                  </Typography.Text>
+                  <div className={`${tw.hotelGrid} mt-4`}>
+                    {hotels.map((hotel) => (
+                      <HotelCard
+                        key={hotel._id}
+                        hotel={hotel}
+                        search={queryString}
+                      />
+                    ))}
+                  </div>
+                  {pagination.pages > 1 ? (
+                    <div className="mt-8 flex justify-center">
+                      <Pagination
+                        current={pagination.page}
+                        total={pagination.total}
+                        pageSize={PAGE_SIZE}
+                        onChange={changePage}
+                        showSizeChanger={false}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              )}
             </Col>
             <Col xs={24} lg={10} xl={9}>
               <div
                 className={`${tw.surface} sticky top-[calc(4.25rem+1rem)] overflow-hidden p-1.5 max-lg:static [&_.leaflet-container]:rounded-[14px]`}
               >
-                <HotelMap hotels={hotels} height={620} />
+                <HotelMap hotels={loading ? [] : hotels} height={620} />
               </div>
             </Col>
           </Row>
