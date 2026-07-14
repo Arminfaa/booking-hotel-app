@@ -3,7 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Drawer, Flex, Layout, Space, Typography } from "antd";
 import {
   BookOutlined,
+  CalendarOutlined,
   CompassOutlined,
+  DashboardOutlined,
+  HomeOutlined,
   LogoutOutlined,
   MenuOutlined,
   MessageOutlined,
@@ -48,14 +51,14 @@ export default function Navbar() {
     const items = [
       { to: "/search", label: t("explore"), icon: <CompassOutlined /> },
       { to: "/bookmarks", label: t("saved"), icon: <BookOutlined /> },
-      { to: "/bookings", label: t("trips") },
+      { to: "/bookings", label: t("trips"), icon: <CalendarOutlined /> },
       { to: "/messages", label: t("messages"), icon: <MessageOutlined /> },
     ];
     if (user?.role === "host" || user?.role === "admin") {
-      items.push({ to: "/host", label: t("host") });
+      items.push({ to: "/host", label: t("host"), icon: <HomeOutlined /> });
     }
     if (user?.role === "admin") {
-      items.push({ to: "/admin", label: t("admin") });
+      items.push({ to: "/admin", label: t("admin"), icon: <DashboardOutlined /> });
     }
     return items;
   }, [t, user?.role]);
