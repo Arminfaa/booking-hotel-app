@@ -65,7 +65,7 @@ export default function SearchBar({
         <DatePicker
           id="checkIn"
           size="large"
-          className="w-full"
+          className="w-full!"
           value={checkIn ? dayjs(checkIn) : null}
           minDate={dayjs()}
           onChange={(date) => setCheckIn(date ? date.format("YYYY-MM-DD") : "")}
@@ -78,7 +78,7 @@ export default function SearchBar({
         <DatePicker
           id="checkOut"
           size="large"
-          className="w-full"
+          className="w-full!"
           value={checkOut ? dayjs(checkOut) : null}
           minDate={dayjs(checkIn || undefined)}
           onChange={(date) => setCheckOut(date ? date.format("YYYY-MM-DD") : "")}
@@ -91,7 +91,7 @@ export default function SearchBar({
         <InputNumber
           id="guests"
           size="large"
-          className="w-full"
+          className="w-full!"
           min={1}
           max={16}
           value={guests}
