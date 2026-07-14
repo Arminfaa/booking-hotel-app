@@ -7,7 +7,6 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
 import { formatMoney } from "../../utils/format";
-import "./HotelMap.css";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -37,7 +36,7 @@ export default function HotelMap({ hotels = [], height = 420 }) {
   const fallback = [48.8566, 2.3522];
 
   return (
-    <div className="hotel-map" style={{ height }}>
+    <div className="hotel-map overflow-hidden rounded-cove border border-line" style={{ height }}>
       <MapContainer
         center={fallback}
         zoom={3}
@@ -45,8 +44,8 @@ export default function HotelMap({ hotels = [], height = 420 }) {
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         <FitBounds hotels={hotels} />
         {hotels.map((hotel) => {

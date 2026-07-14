@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { InputNumber, Select } from "antd";
+import { Button, Col, InputNumber, Row, Select, Typography } from "antd";
+import { EnvironmentOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
@@ -8,7 +9,7 @@ import HotelCard from "../components/hotels/HotelCard";
 import HotelMap from "../components/hotels/HotelMap";
 import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
-import "./Search.css";
+import { tw } from "../styles/tw";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -84,15 +85,24 @@ export default function Search() {
     );
   }
 
+  function patchParam(key, value) {
+    const next = new URLSearchParams(searchParams);
+    if (value != null && value !== "") next.set(key, String(value));
+    else next.delete(key);
+    setSearchParams(next);
+  }
+
   const queryString = searchParams.toString()
     ? `?${searchParams.toString()}`
     : "";
 
   return (
-    <div className="section search-page">
-      <div className="container">
-        <p className="section__eyebrow">Explore</p>
-        <h1 className="section__title">Find your next stay</h1>
+    <div className={tw.page}>
+      <div className={tw.container}>
+        <span className={tw.eyebrow}>Explore</span>
+        <Typography.Title level={1} className="!mb-5">
+          Find your next stay
+        </Typography.Title>
         <SearchBar
           compact
           initial={filters}
@@ -105,71 +115,57 @@ export default function Search() {
           }}
         />
 
-        <div className="search-filters">
-          <button className="btn btn--soft" type="button" onClick={nearMe} disabled={geoLoading}>
-            {geoLoading ? "Locating..." : "Near me"}
-          </button>
-          <label>
-            Radius (km)
+        <div
+          className={`${tw.surface} my-5 mb-8 grid grid-cols-[auto_repeat(4,minmax(0,1fr))] items-end gap-3.5 p-4 max-[960px]:grid-cols-2 max-[520px]:grid-cols-1`}
+        >
+          <Button
+            icon={<EnvironmentOutlined />}
+            onClick={nearMe}
+            loading={geoLoading}
+          >
+            Near me
+          </Button>
+          <div className={tw.field}>
+            <label className={tw.fieldLabel}>Radius (km)</label>
             <InputNumber
               min={5}
               max={500}
-              style={{ width: "100%" }}
+              className="w-full"
               value={filters.radiusKm ? Number(filters.radiusKm) : null}
-              onChange={(value) => {
-                const next = new URLSearchParams(searchParams);
-                if (value != null) next.set("radiusKm", String(value));
-                else next.delete("radiusKm");
-                setSearchParams(next);
-              }}
+              onChange={(value) => patchParam("radiusKm", value)}
             />
-          </label>
-          <label>
-            Type
+          </div>
+          <div className={tw.field}>
+            <label className={tw.fieldLabel}>Type</label>
             <Select
-              style={{ width: "100%" }}
               allowClear
               placeholder="Any"
+              className="w-full"
               value={filters.propertyType || undefined}
-              onChange={(value) => {
-                const next = new URLSearchParams(searchParams);
-                if (value) next.set("propertyType", value);
-                else next.delete("propertyType");
-                setSearchParams(next);
-              }}
+              onChange={(value) => patchParam("propertyType", value)}
               options={["apartment", "house", "villa", "cabin", "loft", "hotel"].map(
                 (type) => ({ value: type, label: type })
               )}
             />
-          </label>
-          <label>
-            Min price
+          </div>
+          <div className={tw.field}>
+            <label className={tw.fieldLabel}>Min price</label>
             <InputNumber
               min={0}
-              style={{ width: "100%" }}
+              className="w-full"
               value={filters.minPrice ? Number(filters.minPrice) : null}
-              onChange={(value) => {
-                const next = new URLSearchParams(searchParams);
-                if (value != null) next.set("minPrice", String(value));
-                else next.delete("minPrice");
-                setSearchParams(next);
-              }}
+              onChange={(value) => patchParam("minPrice", value)}
             />
-          </label>
-          <label>
-            Max price
+          </div>
+          <div className={tw.field}>
+            <label className={tw.fieldLabel}>Max price</label>
             <InputNumber
               min={0}
-              style={{ width: "100%" }}
+              className="w-full"
               value={filters.maxPrice ? Number(filters.maxPrice) : null}
-              onChange={(value) => {
-                const next = new URLSearchParams(searchParams);
-                if (value != null) next.set("maxPrice", String(value));
-                else next.delete("maxPrice");
-                setSearchParams(next);
-              }}
+              onChange={(value) => patchParam("maxPrice", value)}
             />
-          </label>
+          </div>
         </div>
 
         {loading ? (
@@ -182,10 +178,12 @@ export default function Search() {
             message="Try another city, wider dates, or fewer filters."
           />
         ) : (
-          <div className="search-layout">
-            <div>
-              <p className="search-count">{hotels.length} stays</p>
-              <div className="hotel-grid">
+          <Row gutter={[28, 28]}>
+            <Col xs={24} lg={14} xl={15}>
+              <Typography.Text type="secondary" className="font-semibold">
+                {hotels.length} stays
+              </Typography.Text>
+              <div className={`${tw.hotelGrid} mt-4`}>
                 {hotels.map((hotel) => (
                   <HotelCard
                     key={hotel._id}
@@ -194,9 +192,15 @@ export default function Search() {
                   />
                 ))}
               </div>
-            </div>
-            <HotelMap hotels={hotels} height={620} />
-          </div>
+            </Col>
+            <Col xs={24} lg={10} xl={9}>
+              <div
+                className={`${tw.surface} sticky top-[calc(4.25rem+1rem)] overflow-hidden p-1.5 max-lg:static [&_.leaflet-container]:rounded-[14px]`}
+              >
+                <HotelMap hotels={hotels} height={620} />
+              </div>
+            </Col>
+          </Row>
         )}
       </div>
     </div>

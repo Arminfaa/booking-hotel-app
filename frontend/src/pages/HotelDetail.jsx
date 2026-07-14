@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Input, Select } from "antd";
+import { Button, Card, Col, Flex, Input, Row, Select, Space, Tag, Typography } from "antd";
+import { BookOutlined, LinkOutlined, StarFilled } from "@ant-design/icons";
 import toast from "react-hot-toast";
-import { HiOutlineBookmark, HiOutlineLink, HiStar } from "react-icons/hi";
 import { bookmarksApi, hotelsApi, messagesApi } from "../api";
 import BookingPanel from "../components/booking/BookingPanel";
 import HotelMap from "../components/hotels/HotelMap";
@@ -10,7 +10,7 @@ import OccupancyCalendar from "../components/hotels/OccupancyCalendar";
 import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
 import { useAuth } from "../hooks/useAuth";
-import "./HotelDetail.css";
+import { tw } from "../styles/tw";
 
 export default function HotelDetail() {
   const { id } = useParams();
@@ -136,168 +136,187 @@ export default function HotelDetail() {
   }
 
   return (
-    <div className="section hotel-detail">
-      <div className="container">
-        <div className="hotel-detail__intro animate-rise">
+    <div className={tw.page}>
+      <div className={tw.container}>
+        <Flex
+          className="mb-6 animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both]"
+          justify="space-between"
+          gap={16}
+          wrap
+        >
           <div>
-            <p className="section__eyebrow">
+            <span className={tw.eyebrow}>
               {hotel.city}, {hotel.country}
-            </p>
-            <h1 className="section__title">{hotel.title}</h1>
-            <p className="hotel-detail__meta">
-              <HiStar /> {hotel.ratingAverage?.toFixed?.(1) || "New"} ·{" "}
-              {hotel.ratingCount || 0} reviews · {hotel.propertyType} ·{" "}
-              {hotel.maxGuests} guests · {hotel.cancellationPolicy} cancel
-            </p>
+            </span>
+            <Typography.Title level={1} className="!mb-2">
+              {hotel.title}
+            </Typography.Title>
+            <Typography.Text type="secondary" className="capitalize">
+              <StarFilled className="text-sand" />{" "}
+              {hotel.ratingAverage?.toFixed?.(1) || "New"} · {hotel.ratingCount || 0}{" "}
+              reviews · {hotel.propertyType} · {hotel.maxGuests} guests ·{" "}
+              {hotel.cancellationPolicy} cancel
+            </Typography.Text>
           </div>
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-            <button type="button" className="btn btn--ghost" onClick={copyShareLink}>
-              <HiOutlineLink /> Share
-            </button>
-            <button
-              type="button"
-              className={`btn ${bookmarked ? "btn--primary" : "btn--ghost"}`}
+          <Space wrap>
+            <Button icon={<LinkOutlined />} onClick={copyShareLink}>
+              Share
+            </Button>
+            <Button
+              type={bookmarked ? "primary" : "default"}
+              icon={<BookOutlined />}
               onClick={toggleBookmark}
-              aria-pressed={bookmarked}
             >
-              <HiOutlineBookmark /> {bookmarked ? "Saved" : "Save"}
-            </button>
-          </div>
-        </div>
+              {bookmarked ? "Saved" : "Save"}
+            </Button>
+          </Space>
+        </Flex>
 
-        <div className="hotel-detail__gallery animate-fade">
+        <div className="mb-8 grid animate-[fade_0.85s_ease_both] gap-3 min-[900px]:grid-cols-[1.5fr_1fr] min-[900px]:grid-rows-[1fr_1fr] min-[900px]:min-h-[420px]">
           {hotel.images.slice(0, 3).map((src, index) => (
             <img
               key={src}
               src={src}
               alt={`${hotel.title} photo ${index + 1}`}
-              className={index === 0 ? "hotel-detail__hero-img" : ""}
+              className={[
+                "size-full rounded-cove border border-line object-cover",
+                index === 0
+                  ? "min-h-[280px] max-h-[460px] min-[900px]:row-span-2 min-[900px]:min-h-full min-[900px]:max-h-none"
+                  : "",
+              ].join(" ")}
             />
           ))}
         </div>
 
-        <div className="hotel-detail__layout">
-          <div>
-            <section className="hotel-detail__block">
-              <h2>About this stay</h2>
-              <p>{hotel.description}</p>
-              <p className="hotel-detail__host">
+        <Row gutter={[28, 28]}>
+          <Col xs={24} lg={15}>
+            <section className="mb-8">
+              <Typography.Title level={3}>About this stay</Typography.Title>
+              <Typography.Paragraph>{hotel.description}</Typography.Paragraph>
+              <Typography.Text type="secondary">
                 Hosted by {hotel.host?.name || "Cove host"} · {hotel.bedrooms}{" "}
                 bedrooms · {hotel.beds} beds · {hotel.bathrooms} baths
-              </p>
+              </Typography.Text>
             </section>
 
-            <section className="hotel-detail__block">
-              <h2>Amenities</h2>
-              <ul className="amenity-list">
+            <section className="mb-8">
+              <Typography.Title level={3}>Amenities</Typography.Title>
+              <Space size={[8, 8]} wrap>
                 {hotel.amenities?.map((item) => (
-                  <li key={item}>{item}</li>
+                  <Tag key={item}>{item}</Tag>
                 ))}
-              </ul>
+              </Space>
             </section>
 
-            <section className="hotel-detail__block">
-              <h2>Availability</h2>
+            <section className="mb-8">
+              <Typography.Title level={3}>Availability</Typography.Title>
               <OccupancyCalendar hotelId={hotel._id} />
             </section>
 
-            <section className="hotel-detail__block">
-              <h2>Where you’ll be</h2>
-              <p>
+            <section className="mb-8">
+              <Typography.Title level={3}>Where you’ll be</Typography.Title>
+              <Typography.Paragraph type="secondary">
                 {hotel.address} · {hotel.city}, {hotel.country}
-              </p>
-              <HotelMap hotels={[hotel]} height={320} />
+              </Typography.Paragraph>
+              <div className={`${tw.surface} overflow-hidden p-2`}>
+                <HotelMap hotels={[hotel]} height={320} />
+              </div>
             </section>
 
-            <section className="hotel-detail__block">
-              <h2>Message host</h2>
-              <form onSubmit={messageHost} className="review-form">
-                <div className="field">
-                  <label htmlFor="host-msg">Your message</label>
-                  <Input.TextArea
-                    id="host-msg"
-                    rows={4}
-                    value={messageBody}
-                    onChange={(e) => setMessageBody(e.target.value)}
-                    required
-                    minLength={2}
-                    placeholder="Ask about check-in, parking, or local tips..."
-                  />
-                </div>
-                <button className="btn btn--soft" type="submit">
-                  Send message
-                </button>
-              </form>
+            <section className="mb-8">
+              <Typography.Title level={3}>Message host</Typography.Title>
+              <Card size="small" className="max-w-xl">
+                <form onSubmit={messageHost}>
+                  <div className={`${tw.field} mb-3`}>
+                    <label htmlFor="host-msg" className={tw.fieldLabel}>
+                      Your message
+                    </label>
+                    <Input.TextArea
+                      id="host-msg"
+                      rows={4}
+                      value={messageBody}
+                      onChange={(e) => setMessageBody(e.target.value)}
+                      required
+                      minLength={2}
+                      placeholder="Ask about check-in, parking, or local tips..."
+                    />
+                  </div>
+                  <Button htmlType="submit">Send message</Button>
+                </form>
+              </Card>
             </section>
 
-            <section className="hotel-detail__block">
-              <h2>Guest reviews</h2>
+            <section className="mb-8">
+              <Typography.Title level={3}>Guest reviews</Typography.Title>
               {reviews.length === 0 ? (
-                <p className="muted">No reviews yet.</p>
+                <Typography.Text type="secondary">No reviews yet.</Typography.Text>
               ) : (
-                <div className="review-list">
+                <Space direction="vertical" size="middle" className="w-full">
                   {reviews.map((review) => (
-                    <article key={review._id} className="review">
-                      <header>
-                        <strong>{review.user?.name || "Guest"}</strong>
-                        <span>
-                          <HiStar /> {review.rating}
-                        </span>
-                      </header>
-                      <p>{review.comment}</p>
-                    </article>
+                    <Card key={review._id} size="small" className="!bg-paper/45">
+                      <Flex justify="space-between" className="mb-1.5">
+                        <Typography.Text strong>
+                          {review.user?.name || "Guest"}
+                        </Typography.Text>
+                        <Typography.Text>
+                          <StarFilled className="text-sand" /> {review.rating}
+                        </Typography.Text>
+                      </Flex>
+                      <Typography.Paragraph className="!m-0">
+                        {review.comment}
+                      </Typography.Paragraph>
+                    </Card>
                   ))}
-                </div>
+                </Space>
               )}
 
               {isAuthenticated ? (
-                <form className="review-form" onSubmit={submitReview}>
-                  <h3>Leave a review</h3>
-                  <div className="field">
-                    <label htmlFor="rating">Rating</label>
-                    <Select
-                      id="rating"
-                      size="large"
-                      style={{ width: "100%" }}
-                      value={reviewForm.rating}
-                      onChange={(rating) =>
-                        setReviewForm((s) => ({
-                          ...s,
-                          rating,
-                        }))
-                      }
-                      options={[5, 4, 3, 2, 1].map((n) => ({
-                        value: n,
-                        label: String(n),
-                      }))}
-                    />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="comment">Comment</label>
-                    <Input.TextArea
-                      id="comment"
-                      rows={4}
-                      value={reviewForm.comment}
-                      onChange={(e) =>
-                        setReviewForm((s) => ({
-                          ...s,
-                          comment: e.target.value,
-                        }))
-                      }
-                      required
-                      minLength={5}
-                    />
-                  </div>
-                  <button className="btn btn--soft" disabled={savingReview}>
-                    {savingReview ? "Publishing..." : "Publish review"}
-                  </button>
-                </form>
+                <Card size="small" className="mt-4 max-w-xl">
+                  <Typography.Title level={5}>Leave a review</Typography.Title>
+                  <form onSubmit={submitReview}>
+                    <div className={`${tw.field} mb-3`}>
+                      <label htmlFor="rating" className={tw.fieldLabel}>
+                        Rating
+                      </label>
+                      <Select
+                        id="rating"
+                        size="large"
+                        className="w-full"
+                        value={reviewForm.rating}
+                        onChange={(rating) => setReviewForm((s) => ({ ...s, rating }))}
+                        options={[5, 4, 3, 2, 1].map((n) => ({
+                          value: n,
+                          label: String(n),
+                        }))}
+                      />
+                    </div>
+                    <div className={`${tw.field} mb-3`}>
+                      <label htmlFor="comment" className={tw.fieldLabel}>
+                        Comment
+                      </label>
+                      <Input.TextArea
+                        id="comment"
+                        rows={4}
+                        value={reviewForm.comment}
+                        onChange={(e) =>
+                          setReviewForm((s) => ({ ...s, comment: e.target.value }))
+                        }
+                        required
+                        minLength={5}
+                      />
+                    </div>
+                    <Button type="primary" htmlType="submit" loading={savingReview}>
+                      Publish review
+                    </Button>
+                  </form>
+                </Card>
               ) : null}
             </section>
-          </div>
-
-          <BookingPanel hotel={hotel} initial={initialBooking} />
-        </div>
+          </Col>
+          <Col xs={24} lg={9}>
+            <BookingPanel hotel={hotel} initial={initialBooking} />
+          </Col>
+        </Row>
       </div>
     </div>
   );

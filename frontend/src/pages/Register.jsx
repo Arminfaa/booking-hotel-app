@@ -1,30 +1,23 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Input, Select } from "antd";
+import { Button, Card, Form, Input, Select, Typography } from "antd";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
-import "./Auth.css";
+import { tw } from "../styles/tw";
 
 export default function Register() {
   const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "guest",
-  });
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) return <Navigate to="/" replace />;
 
-  async function onSubmit(e) {
-    e.preventDefault();
+  async function onFinish(values) {
     setLoading(true);
     try {
-      await register(form);
+      await register(values);
       toast.success("Account created");
-      navigate(form.role === "host" ? "/host" : "/");
+      navigate(values.role === "host" ? "/host" : "/");
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -33,69 +26,67 @@ export default function Register() {
   }
 
   return (
-    <div className="section auth-page">
-      <div className="container auth-card animate-rise">
-        <p className="section__eyebrow">Account</p>
-        <h1>Join Cove</h1>
-        <p className="auth-lead">
-          Create an account to reserve stays, save bookmarks, or host listings.
-        </p>
-        <form onSubmit={onSubmit} className="auth-form">
-          <div className="field">
-            <label htmlFor="name">Name</label>
-            <Input
-              id="name"
-              size="large"
-              value={form.name}
-              onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <Input
-              id="email"
-              type="email"
-              size="large"
-              value={form.email}
-              onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <Input.Password
-              id="password"
-              size="large"
-              minLength={6}
-              value={form.password}
-              onChange={(e) =>
-                setForm((s) => ({ ...s, password: e.target.value }))
-              }
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="role">I want to</label>
-            <Select
-              id="role"
-              size="large"
-              style={{ width: "100%" }}
-              value={form.role}
-              onChange={(role) => setForm((s) => ({ ...s, role }))}
-              options={[
-                { value: "guest", label: "Book stays" },
-                { value: "host", label: "Host listings" },
+    <div className={`${tw.page} grid min-h-[calc(100svh-4.25rem-8rem)] items-center`}>
+      <div className={`${tw.container} max-w-[460px]`}>
+        <Card
+          className="animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove bg-[radial-gradient(500px_220px_at_0%_0%,rgba(94,196,168,0.12),transparent_55%),rgba(15,26,36,0.88)] [&_.ant-card-body]:p-[clamp(1.5rem,4vw,2rem)]"
+          bordered
+        >
+          <span className={tw.eyebrow}>Account</span>
+          <Typography.Title level={2}>Join Cove</Typography.Title>
+          <Typography.Paragraph type="secondary" className="!mb-6">
+            Create an account to reserve stays, save bookmarks, or host listings.
+          </Typography.Paragraph>
+          <Form
+            layout="vertical"
+            size="large"
+            onFinish={onFinish}
+            initialValues={{ role: "guest" }}
+            requiredMark={false}
+          >
+            <Form.Item
+              label="Name"
+              name="name"
+              rules={[{ required: true, message: "Name is required" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: true, type: "email", message: "Enter a valid email" }]}
+            >
+              <Input type="email" autoComplete="email" />
+            </Form.Item>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: "Password is required" },
+                { min: 6, message: "At least 6 characters" },
               ]}
-            />
-          </div>
-          <button className="btn btn--primary" disabled={loading}>
-            {loading ? "Creating..." : "Sign up"}
-          </button>
-        </form>
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
+            >
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+            <Form.Item label="I want to" name="role">
+              <Select
+                options={[
+                  { value: "guest", label: "Book stays" },
+                  { value: "host", label: "Host listings" },
+                ]}
+              />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block size="large">
+              Sign up
+            </Button>
+          </Form>
+          <Typography.Paragraph className="!mt-5 !mb-0 text-center text-ink-soft">
+            Already have an account?{" "}
+            <Link to="/login" className="font-bold text-sea hover:underline">
+              Log in
+            </Link>
+          </Typography.Paragraph>
+        </Card>
       </div>
     </div>
   );

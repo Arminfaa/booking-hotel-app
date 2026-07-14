@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DatePicker, Input, InputNumber } from "antd";
+import { Button, Card, DatePicker, Divider, Input, InputNumber, Typography } from "antd";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { bookingsApi, hotelsApi } from "../../api";
 import { useAuth } from "../../hooks/useAuth";
 import { formatMoney, nightsBetween, toInputDate } from "../../utils/format";
-import "./BookingPanel.css";
+import { tw } from "../../styles/tw";
 
 const SERVICE_PCT = 10;
 const TAX_PCT = 8;
@@ -69,61 +69,76 @@ export default function BookingPanel({ hotel, initial = {} }) {
   }
 
   return (
-    <aside className="booking-panel animate-rise">
-      <p className="booking-panel__price">
-        <strong>{formatMoney(hotel.pricePerNight)}</strong>
-        <span> / night</span>
-      </p>
-      <p className="booking-panel__policy">
+    <Card
+      className="sticky top-[calc(4.25rem+1rem)] animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove max-lg:static [&_.ant-card-body]:p-[1.35rem]"
+      bordered
+    >
+      <Typography.Title level={3} className="!mb-1.5 !text-[1.75rem]">
+        {formatMoney(hotel.pricePerNight)}
+        <Typography.Text
+          type="secondary"
+          className="!font-body !text-base"
+        >
+          {" "}
+          / night
+        </Typography.Text>
+      </Typography.Title>
+      <Typography.Text type="secondary" className="mb-4 block capitalize">
         Cancellation: <strong>{hotel.cancellationPolicy || "moderate"}</strong>
-      </p>
-      <form onSubmit={handleBook} className="booking-panel__form">
-        <div className="booking-panel__dates">
-          <div className="field">
-            <label htmlFor="bp-checkIn">Check-in</label>
+      </Typography.Text>
+
+      <form onSubmit={handleBook} className="grid gap-3.5">
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className={tw.field}>
+            <label htmlFor="bp-checkIn" className={tw.fieldLabel}>
+              Check-in
+            </label>
             <DatePicker
               id="bp-checkIn"
               size="large"
-              style={{ width: "100%" }}
+              className="w-full"
               value={checkIn ? dayjs(checkIn) : null}
               minDate={dayjs()}
               onChange={(date) => setCheckIn(date ? date.format("YYYY-MM-DD") : "")}
-              required
             />
           </div>
-          <div className="field">
-            <label htmlFor="bp-checkOut">Check-out</label>
+          <div className={tw.field}>
+            <label htmlFor="bp-checkOut" className={tw.fieldLabel}>
+              Check-out
+            </label>
             <DatePicker
               id="bp-checkOut"
               size="large"
-              style={{ width: "100%" }}
+              className="w-full"
               value={checkOut ? dayjs(checkOut) : null}
               minDate={dayjs(checkIn || undefined)}
               onChange={(date) => setCheckOut(date ? date.format("YYYY-MM-DD") : "")}
-              required
             />
           </div>
         </div>
-        <div className="booking-panel__guests">
-          <div className="field">
-            <label htmlFor="bp-adults">Adults</label>
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className={tw.field}>
+            <label htmlFor="bp-adults" className={tw.fieldLabel}>
+              Adults
+            </label>
             <InputNumber
               id="bp-adults"
               size="large"
-              style={{ width: "100%" }}
+              className="w-full"
               min={1}
               max={hotel.maxGuests}
               value={adults}
               onChange={(value) => setAdults(Number(value) || 1)}
-              required
             />
           </div>
-          <div className="field">
-            <label htmlFor="bp-children">Children</label>
+          <div className={tw.field}>
+            <label htmlFor="bp-children" className={tw.fieldLabel}>
+              Children
+            </label>
             <InputNumber
               id="bp-children"
               size="large"
-              style={{ width: "100%" }}
+              className="w-full"
               min={0}
               max={Math.max(0, hotel.maxGuests - 1)}
               value={children}
@@ -131,8 +146,10 @@ export default function BookingPanel({ hotel, initial = {} }) {
             />
           </div>
         </div>
-        <div className="field">
-          <label htmlFor="bp-notes">Special requests</label>
+        <div className={tw.field}>
+          <label htmlFor="bp-notes" className={tw.fieldLabel}>
+            Special requests
+          </label>
           <Input.TextArea
             id="bp-notes"
             rows={3}
@@ -142,39 +159,37 @@ export default function BookingPanel({ hotel, initial = {} }) {
           />
         </div>
 
-        <div className="booking-panel__summary">
-          <div>
+        <Divider className="!my-1" />
+
+        <div className="grid gap-2 text-[0.92rem] text-ink-soft">
+          <div className="flex justify-between gap-4">
             <span>
               {formatMoney(hotel.pricePerNight)} × {nights || 0} nights
             </span>
             <strong>{formatMoney(lodging)}</strong>
           </div>
-          <div>
+          <div className="flex justify-between gap-4">
             <span>Cleaning fee</span>
             <strong>{formatMoney(cleaning)}</strong>
           </div>
-          <div>
+          <div className="flex justify-between gap-4">
             <span>Service fee ({SERVICE_PCT}%)</span>
             <strong>{formatMoney(serviceFee)}</strong>
           </div>
-          <div>
+          <div className="flex justify-between gap-4">
             <span>Taxes ({TAX_PCT}%)</span>
             <strong>{formatMoney(tax)}</strong>
           </div>
-          <div className="booking-panel__total">
+          <div className="flex justify-between gap-4 pt-1.5 text-[1.08rem] text-ink">
             <span>Total</span>
             <strong>{formatMoney(total)}</strong>
           </div>
         </div>
 
-        <button className="btn btn--primary" type="submit" disabled={loading}>
-          {loading
-            ? "Creating..."
-            : isAuthenticated
-              ? "Reserve & pay"
-              : "Log in to reserve"}
-        </button>
+        <Button type="primary" size="large" htmlType="submit" loading={loading} block>
+          {isAuthenticated ? "Reserve & pay" : "Log in to reserve"}
+        </Button>
       </form>
-    </aside>
+    </Card>
   );
 }

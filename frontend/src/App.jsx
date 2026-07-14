@@ -19,12 +19,13 @@ import Admin from "./pages/Admin";
 import Inbox from "./pages/Inbox";
 import SharedWishlist from "./pages/SharedWishlist";
 import NotFound from "./pages/NotFound";
+import { tw } from "./styles/tw";
 
 function Shell() {
   return (
-    <div className="app-shell">
+    <div className={tw.shell}>
       <Navbar />
-      <main className="app-shell__main">
+      <main className={tw.main}>
         <Outlet />
       </main>
       <Footer />
@@ -36,7 +37,16 @@ export default function App() {
   return (
     <LocaleProvider>
       <AuthProvider>
-        <Toaster position="top-center" />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "#13202c",
+              color: "#e8eef2",
+              border: "1px solid rgba(148, 183, 200, 0.18)",
+            },
+          }}
+        />
         <Routes>
           <Route element={<Shell />}>
             <Route index element={<Home />} />

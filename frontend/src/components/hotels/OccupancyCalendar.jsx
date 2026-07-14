@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { Button, Flex, Typography } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { hotelsApi } from "../../api";
-import "./OccupancyCalendar.css";
+import { tw } from "../../styles/tw";
 
 function toKey(date) {
   return date.toISOString().slice(0, 10);
@@ -51,32 +53,28 @@ export default function OccupancyCalendar({ hotelId }) {
   for (let day = 1; day <= total; day += 1) cells.push(day);
 
   return (
-    <div className="occ-cal">
-      <div className="occ-cal__head">
-        <button
-          type="button"
-          className="btn btn--ghost"
+    <div className={`${tw.surface} p-4`}>
+      <Flex justify="space-between" align="center" className="mb-3">
+        <Button
+          type="text"
+          icon={<LeftOutlined />}
           onClick={() => setCursor(new Date(year, month - 1, 1))}
-        >
-          ‹
-        </button>
-        <strong>
+        />
+        <Typography.Text strong>
           {cursor.toLocaleString("en", { month: "long", year: "numeric" })}
-        </strong>
-        <button
-          type="button"
-          className="btn btn--ghost"
+        </Typography.Text>
+        <Button
+          type="text"
+          icon={<RightOutlined />}
           onClick={() => setCursor(new Date(year, month + 1, 1))}
-        >
-          ›
-        </button>
-      </div>
-      <div className="occ-cal__week">
+        />
+      </Flex>
+      <div className="mb-1.5 grid grid-cols-7 gap-1.5 text-center text-[0.75rem] font-bold text-ink-soft">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
-      <div className="occ-cal__grid">
+      <div className="grid grid-cols-7 gap-1.5 text-center">
         {cells.map((day, idx) => {
           if (!day) return <span key={`e-${idx}`} />;
           const key = toKey(new Date(year, month, day));
@@ -84,7 +82,12 @@ export default function OccupancyCalendar({ hotelId }) {
           return (
             <span
               key={key}
-              className={`occ-cal__day ${isBusy ? "occ-cal__day--busy" : ""}`}
+              className={[
+                "grid aspect-square place-items-center rounded-[10px] text-[0.85rem] font-semibold",
+                isBusy
+                  ? "bg-coral/22 text-coral line-through"
+                  : "bg-sea/12 text-ink",
+              ].join(" ")}
               title={isBusy ? "Unavailable" : "Available"}
             >
               {day}
@@ -92,9 +95,13 @@ export default function OccupancyCalendar({ hotelId }) {
           );
         })}
       </div>
-      <p className="occ-cal__legend">
-        <span className="occ-cal__swatch" /> Booked / blocked nights
-      </p>
+      <Typography.Text
+        type="secondary"
+        className="mt-3.5 !flex items-center gap-1.5 text-[0.85rem]"
+      >
+        <span className="inline-block size-3.5 rounded bg-coral/35" /> Booked /
+        blocked nights
+      </Typography.Text>
     </div>
   );
 }
