@@ -1,5 +1,7 @@
 import { useNavigate, createSearchParams } from "react-router-dom";
 import { useState } from "react";
+import { DatePicker, Input, InputNumber } from "antd";
+import dayjs from "dayjs";
 import { toInputDate } from "../../utils/format";
 import "./SearchBar.css";
 
@@ -40,9 +42,10 @@ export default function SearchBar({
     >
       <div className="field">
         <label htmlFor="city">Where</label>
-        <input
+        <Input
           id="city"
           name="city"
+          size="large"
           placeholder="City or destination"
           value={city}
           onChange={(e) => setCity(e.target.value)}
@@ -50,35 +53,38 @@ export default function SearchBar({
       </div>
       <div className="field">
         <label htmlFor="checkIn">Check-in</label>
-        <input
+        <DatePicker
           id="checkIn"
-          type="date"
-          value={checkIn}
-          min={toInputDate()}
-          onChange={(e) => setCheckIn(e.target.value)}
+          size="large"
+          style={{ width: "100%" }}
+          value={checkIn ? dayjs(checkIn) : null}
+          minDate={dayjs()}
+          onChange={(date) => setCheckIn(date ? date.format("YYYY-MM-DD") : "")}
           required
         />
       </div>
       <div className="field">
         <label htmlFor="checkOut">Check-out</label>
-        <input
+        <DatePicker
           id="checkOut"
-          type="date"
-          value={checkOut}
-          min={checkIn || toInputDate()}
-          onChange={(e) => setCheckOut(e.target.value)}
+          size="large"
+          style={{ width: "100%" }}
+          value={checkOut ? dayjs(checkOut) : null}
+          minDate={dayjs(checkIn || undefined)}
+          onChange={(date) => setCheckOut(date ? date.format("YYYY-MM-DD") : "")}
           required
         />
       </div>
       <div className="field">
         <label htmlFor="guests">Guests</label>
-        <input
+        <InputNumber
           id="guests"
-          type="number"
+          size="large"
+          style={{ width: "100%" }}
           min={1}
           max={16}
           value={guests}
-          onChange={(e) => setGuests(Number(e.target.value))}
+          onChange={(value) => setGuests(Number(value) || 1)}
           required
         />
       </div>

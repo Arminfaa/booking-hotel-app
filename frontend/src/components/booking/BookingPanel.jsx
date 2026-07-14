@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DatePicker, Input, InputNumber } from "antd";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 import { bookingsApi, hotelsApi } from "../../api";
 import { useAuth } from "../../hooks/useAuth";
@@ -79,23 +81,25 @@ export default function BookingPanel({ hotel, initial = {} }) {
         <div className="booking-panel__dates">
           <div className="field">
             <label htmlFor="bp-checkIn">Check-in</label>
-            <input
+            <DatePicker
               id="bp-checkIn"
-              type="date"
-              value={checkIn}
-              min={toInputDate()}
-              onChange={(e) => setCheckIn(e.target.value)}
+              size="large"
+              style={{ width: "100%" }}
+              value={checkIn ? dayjs(checkIn) : null}
+              minDate={dayjs()}
+              onChange={(date) => setCheckIn(date ? date.format("YYYY-MM-DD") : "")}
               required
             />
           </div>
           <div className="field">
             <label htmlFor="bp-checkOut">Check-out</label>
-            <input
+            <DatePicker
               id="bp-checkOut"
-              type="date"
-              value={checkOut}
-              min={checkIn || toInputDate()}
-              onChange={(e) => setCheckOut(e.target.value)}
+              size="large"
+              style={{ width: "100%" }}
+              value={checkOut ? dayjs(checkOut) : null}
+              minDate={dayjs(checkIn || undefined)}
+              onChange={(date) => setCheckOut(date ? date.format("YYYY-MM-DD") : "")}
               required
             />
           </div>
@@ -103,32 +107,35 @@ export default function BookingPanel({ hotel, initial = {} }) {
         <div className="booking-panel__guests">
           <div className="field">
             <label htmlFor="bp-adults">Adults</label>
-            <input
+            <InputNumber
               id="bp-adults"
-              type="number"
+              size="large"
+              style={{ width: "100%" }}
               min={1}
               max={hotel.maxGuests}
               value={adults}
-              onChange={(e) => setAdults(Number(e.target.value))}
+              onChange={(value) => setAdults(Number(value) || 1)}
               required
             />
           </div>
           <div className="field">
             <label htmlFor="bp-children">Children</label>
-            <input
+            <InputNumber
               id="bp-children"
-              type="number"
+              size="large"
+              style={{ width: "100%" }}
               min={0}
               max={Math.max(0, hotel.maxGuests - 1)}
               value={children}
-              onChange={(e) => setChildren(Number(e.target.value))}
+              onChange={(value) => setChildren(Number(value) || 0)}
             />
           </div>
         </div>
         <div className="field">
           <label htmlFor="bp-notes">Special requests</label>
-          <textarea
+          <Input.TextArea
             id="bp-notes"
+            rows={3}
             value={specialRequests}
             onChange={(e) => setSpecialRequests(e.target.value)}
             placeholder="Late check-in, extra pillows..."

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Input } from "antd";
 import toast from "react-hot-toast";
 import { authApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
@@ -38,8 +39,9 @@ export default function Profile() {
         <form className="auth-form" onSubmit={onSubmit}>
           <div className="field">
             <label htmlFor="name">Name</label>
-            <input
+            <Input
               id="name"
+              size="large"
               value={form.name}
               onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
               required
@@ -47,16 +49,18 @@ export default function Profile() {
           </div>
           <div className="field">
             <label htmlFor="phone">Phone</label>
-            <input
+            <Input
               id="phone"
+              size="large"
               value={form.phone}
               onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
             />
           </div>
           <div className="field">
             <label htmlFor="avatar">Avatar URL</label>
-            <input
+            <Input
               id="avatar"
+              size="large"
               value={form.avatar}
               onChange={(e) => setForm((s) => ({ ...s, avatar: e.target.value }))}
             />
