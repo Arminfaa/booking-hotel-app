@@ -1,0 +1,10 @@
+.hotel-map {
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.hotel-map .leaflet-container {
+  font-family: var(--font-body);
+}

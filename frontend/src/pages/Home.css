@@ -1,0 +1,121 @@
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--nav-h));
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+  color: #fff;
+}
+
+.hero__media {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.02);
+  animation: heroZoom 18s ease-in-out alternate infinite;
+}
+
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(15, 39, 68, 0.28) 0%, rgba(15, 39, 68, 0.55) 48%, rgba(15, 39, 68, 0.78) 100%);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  padding: 3.5rem 0 3rem;
+  max-width: 920px;
+}
+
+.hero__brand {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 7vw, 5.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin-bottom: 0.85rem;
+}
+
+.hero h1 {
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  font-weight: 550;
+  max-width: 18ch;
+  margin-bottom: 0.85rem;
+}
+
+.hero__lead {
+  max-width: 36rem;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 1.6rem;
+}
+
+.hero__search {
+  max-width: 980px;
+}
+
+.home-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.hotel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.home-story {
+  padding-top: 0;
+}
+
+.home-story__grid {
+  display: grid;
+  gap: 2rem;
+  padding: 2rem;
+  border-radius: 28px;
+  background: rgba(15, 39, 68, 0.04);
+  border: 1px solid var(--line);
+}
+
+.home-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.home-steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.home-steps strong {
+  font-family: var(--font-display);
+  color: var(--sea-deep);
+}
+
+@keyframes heroZoom {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+@media (min-width: 900px) {
+  .home-story__grid {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+  }
+}
