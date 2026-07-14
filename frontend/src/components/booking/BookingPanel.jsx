@@ -70,125 +70,129 @@ export default function BookingPanel({ hotel, initial = {} }) {
 
   return (
     <Card
-      className="sticky top-[calc(4.25rem+1rem)] animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove max-lg:static [&_.ant-card-body]:p-[1.35rem]"
+      className="sticky! top-[85px] max-h-[calc(100dvh-100px)] animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove max-lg:static [&_.ant-card-body]:flex [&_.ant-card-body]:max-h-[inherit] [&_.ant-card-body]:min-h-0 [&_.ant-card-body]:flex-col [&_.ant-card-body]:overflow-hidden [&_.ant-card-body]:p-0!"
       bordered
     >
-      <Typography.Title level={3} className="!mb-1.5 !text-[1.75rem]">
-        {formatMoney(hotel.pricePerNight)}
-        <Typography.Text
-          type="secondary"
-          className="!font-body !text-base"
-        >
-          {" "}
-          / night
-        </Typography.Text>
-      </Typography.Title>
-      <Typography.Text type="secondary" className="mb-4 block capitalize">
-        Cancellation: <strong>{hotel.cancellationPolicy || "moderate"}</strong>
-      </Typography.Text>
+      <form onSubmit={handleBook} className="flex min-h-0 flex-1 flex-col">
+        <div className="scrollbar-cove grid min-h-0 flex-1 gap-3.5 overflow-y-auto p-[1.35rem] pb-3">
+          <Typography.Title level={3} className="!mb-1.5 !text-[1.75rem]">
+            {formatMoney(hotel.pricePerNight)}
+            <Typography.Text
+              type="secondary"
+              className="!font-body !text-base"
+            >
+              {" "}
+              / night
+            </Typography.Text>
+          </Typography.Title>
+          <Typography.Text type="secondary" className="block capitalize">
+            Cancellation: <strong>{hotel.cancellationPolicy || "moderate"}</strong>
+          </Typography.Text>
 
-      <form onSubmit={handleBook} className="grid gap-3.5">
-        <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className={tw.field}>
+              <label htmlFor="bp-checkIn" className={tw.fieldLabel}>
+                Check-in
+              </label>
+              <DatePicker
+                id="bp-checkIn"
+                size="large"
+                className="w-full"
+                value={checkIn ? dayjs(checkIn) : null}
+                minDate={dayjs()}
+                onChange={(date) => setCheckIn(date ? date.format("YYYY-MM-DD") : "")}
+              />
+            </div>
+            <div className={tw.field}>
+              <label htmlFor="bp-checkOut" className={tw.fieldLabel}>
+                Check-out
+              </label>
+              <DatePicker
+                id="bp-checkOut"
+                size="large"
+                className="w-full"
+                value={checkOut ? dayjs(checkOut) : null}
+                minDate={dayjs(checkIn || undefined)}
+                onChange={(date) => setCheckOut(date ? date.format("YYYY-MM-DD") : "")}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className={tw.field}>
+              <label htmlFor="bp-adults" className={tw.fieldLabel}>
+                Adults
+              </label>
+              <InputNumber
+                id="bp-adults"
+                size="large"
+                className="w-full"
+                min={1}
+                max={hotel.maxGuests}
+                value={adults}
+                onChange={(value) => setAdults(Number(value) || 1)}
+              />
+            </div>
+            <div className={tw.field}>
+              <label htmlFor="bp-children" className={tw.fieldLabel}>
+                Children
+              </label>
+              <InputNumber
+                id="bp-children"
+                size="large"
+                className="w-full"
+                min={0}
+                max={Math.max(0, hotel.maxGuests - 1)}
+                value={children}
+                onChange={(value) => setChildren(Number(value) || 0)}
+              />
+            </div>
+          </div>
           <div className={tw.field}>
-            <label htmlFor="bp-checkIn" className={tw.fieldLabel}>
-              Check-in
+            <label htmlFor="bp-notes" className={tw.fieldLabel}>
+              Special requests
             </label>
-            <DatePicker
-              id="bp-checkIn"
-              size="large"
-              className="w-full"
-              value={checkIn ? dayjs(checkIn) : null}
-              minDate={dayjs()}
-              onChange={(date) => setCheckIn(date ? date.format("YYYY-MM-DD") : "")}
+            <Input.TextArea
+              id="bp-notes"
+              rows={3}
+              value={specialRequests}
+              onChange={(e) => setSpecialRequests(e.target.value)}
+              placeholder="Late check-in, extra pillows..."
             />
           </div>
-          <div className={tw.field}>
-            <label htmlFor="bp-checkOut" className={tw.fieldLabel}>
-              Check-out
-            </label>
-            <DatePicker
-              id="bp-checkOut"
-              size="large"
-              className="w-full"
-              value={checkOut ? dayjs(checkOut) : null}
-              minDate={dayjs(checkIn || undefined)}
-              onChange={(date) => setCheckOut(date ? date.format("YYYY-MM-DD") : "")}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className={tw.field}>
-            <label htmlFor="bp-adults" className={tw.fieldLabel}>
-              Adults
-            </label>
-            <InputNumber
-              id="bp-adults"
-              size="large"
-              className="w-full"
-              min={1}
-              max={hotel.maxGuests}
-              value={adults}
-              onChange={(value) => setAdults(Number(value) || 1)}
-            />
-          </div>
-          <div className={tw.field}>
-            <label htmlFor="bp-children" className={tw.fieldLabel}>
-              Children
-            </label>
-            <InputNumber
-              id="bp-children"
-              size="large"
-              className="w-full"
-              min={0}
-              max={Math.max(0, hotel.maxGuests - 1)}
-              value={children}
-              onChange={(value) => setChildren(Number(value) || 0)}
-            />
-          </div>
-        </div>
-        <div className={tw.field}>
-          <label htmlFor="bp-notes" className={tw.fieldLabel}>
-            Special requests
-          </label>
-          <Input.TextArea
-            id="bp-notes"
-            rows={3}
-            value={specialRequests}
-            onChange={(e) => setSpecialRequests(e.target.value)}
-            placeholder="Late check-in, extra pillows..."
-          />
-        </div>
 
-        <Divider className="!my-1" />
+          <Divider className="!my-1" />
 
-        <div className="grid gap-2 text-[0.92rem] text-ink-soft">
-          <div className="flex justify-between gap-4">
-            <span>
-              {formatMoney(hotel.pricePerNight)} × {nights || 0} nights
-            </span>
-            <strong>{formatMoney(lodging)}</strong>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span>Cleaning fee</span>
-            <strong>{formatMoney(cleaning)}</strong>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span>Service fee ({SERVICE_PCT}%)</span>
-            <strong>{formatMoney(serviceFee)}</strong>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span>Taxes ({TAX_PCT}%)</span>
-            <strong>{formatMoney(tax)}</strong>
-          </div>
-          <div className="flex justify-between gap-4 pt-1.5 text-[1.08rem] text-ink">
-            <span>Total</span>
-            <strong>{formatMoney(total)}</strong>
+          <div className="grid gap-2 text-[0.92rem] text-ink-soft">
+            <div className="flex justify-between gap-4">
+              <span>
+                {formatMoney(hotel.pricePerNight)} × {nights || 0} nights
+              </span>
+              <strong>{formatMoney(lodging)}</strong>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span>Cleaning fee</span>
+              <strong>{formatMoney(cleaning)}</strong>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span>Service fee ({SERVICE_PCT}%)</span>
+              <strong>{formatMoney(serviceFee)}</strong>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span>Taxes ({TAX_PCT}%)</span>
+              <strong>{formatMoney(tax)}</strong>
+            </div>
+            <div className="flex justify-between gap-4 pt-1.5 text-[1.08rem] text-ink">
+              <span>Total</span>
+              <strong>{formatMoney(total)}</strong>
+            </div>
           </div>
         </div>
 
-        <Button type="primary" size="large" htmlType="submit" loading={loading} block>
-          {isAuthenticated ? "Reserve & pay" : "Log in to reserve"}
-        </Button>
+        <div className="shrink-0 border-t border-line bg-foam/95 p-[1rem]! pt-3 backdrop-blur-sm">
+          <Button type="primary" size="large" htmlType="submit" loading={loading} block>
+            {isAuthenticated ? "Reserve & pay" : "Log in to reserve"}
+          </Button>
+        </div>
       </form>
     </Card>
   );
