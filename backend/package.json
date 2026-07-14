@@ -10,8 +10,10 @@
   },
   "scripts": {
     "dev": "node --watch src/server.js",
+    "build": "echo \"No build step for API\"",
     "start": "node src/server.js",
     "seed": "node src/seed/seed.js",
+    "migrate:atlas": "node src/seed/migrate-local-to-atlas.js",
     "test": "node src/tests/booking.utils.test.js",
     "test:integration": "node src/tests/auth.cookies.test.js",
     "lint": "echo \"No backend linter configured\""
