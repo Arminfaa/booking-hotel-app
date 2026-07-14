@@ -8,14 +8,42 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
 import { formatMoney } from "../../utils/format";
 
-function googleMapsDirectionsUrl(lat, lng) {
+function googleMapsDirectionsUrl(lat, lng, origin) {
   const params = new URLSearchParams({
     api: "1",
-    origin: "Current Location",
     destination: `${lat},${lng}`,
     travelmode: "driving",
   });
+  if (origin) {
+    params.set("origin", `${origin.lat},${origin.lng}`);
+  }
   return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+function openDirections(lat, lng) {
+  const launch = (origin) => {
+    window.open(
+      googleMapsDirectionsUrl(lat, lng, origin),
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  if (!navigator.geolocation) {
+    launch();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      launch({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+    },
+    () => launch(),
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 }
+  );
 }
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -69,14 +97,13 @@ export default function HotelMap({ hotels = [], height = 420 }) {
                 {formatMoney(hotel.pricePerNight)} / night
                 <div className="mt-2 flex flex-col gap-1.5">
                   <Link to={`/hotels/${hotel._id}`}>View stay</Link>
-                  <a
-                    href={googleMapsDirectionsUrl(lat, lng)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block rounded-cove-sm border border-line bg-sea/10 px-2.5 py-1 text-center text-[0.85rem] font-semibold text-sea no-underline transition-colors hover:bg-sea/20"
+                  <button
+                    type="button"
+                    onClick={() => openDirections(lat, lng)}
+                    className="inline-block w-full cursor-pointer rounded-cove-sm border border-line bg-sea/10 px-2.5 py-1 text-center text-[0.85rem] font-semibold text-sea transition-colors hover:bg-sea/20"
                   >
                     Directions
-                  </a>
+                  </button>
                 </div>
               </Popup>
             </Marker>
