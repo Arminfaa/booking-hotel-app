@@ -25,7 +25,7 @@ cove-booking/
 - Guest ↔ host **messaging**
 - Host dashboard (create/edit/upload images)
 - Admin panel
-- EN/FA locale toggle (RTL for FA)
+- English-only UI
 
 ## Quick start
 

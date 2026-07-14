@@ -123,7 +123,7 @@ export default function HostDashboard() {
 
   async function onUpload(file) {
     try {
-      const res = await uploadsApi.image(file);
+      const res = await uploadsApi.image(file, "cove/hotels");
       const current = form.getFieldValue("images") || "";
       form.setFieldValue(
         "images",

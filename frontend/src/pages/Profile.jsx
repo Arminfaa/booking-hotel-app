@@ -1,18 +1,22 @@
 import { useState } from "react";
-import { Button, Card, Form, Input, Typography } from "antd";
+import { Avatar, Button, Card, Form, Input, Space, Typography, Upload } from "antd";
+import { UploadOutlined, UserOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
-import { authApi } from "../api";
+import { authApi, uploadsApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
 import { tw } from "../styles/tw";
 
 export default function Profile() {
   const { user, refreshProfile } = useAuth();
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "");
 
   async function onFinish(values) {
     setLoading(true);
     try {
-      await authApi.updateMe(values);
+      await authApi.updateMe({ ...values, avatar: avatarUrl });
       await refreshProfile();
       toast.success("Profile updated");
     } catch (err) {
@@ -20,6 +24,21 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function beforeUpload(file) {
+    setUploading(true);
+    try {
+      const res = await uploadsApi.image(file, "cove/avatars");
+      setAvatarUrl(res.data.url);
+      form.setFieldValue("avatar", res.data.url);
+      toast.success("Photo uploaded");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setUploading(false);
+    }
+    return false;
   }
 
   return (
@@ -36,6 +55,7 @@ export default function Profile() {
             <span className="capitalize">{user?.role}</span>
           </Typography.Paragraph>
           <Form
+            form={form}
             layout="vertical"
             size="large"
             onFinish={onFinish}
@@ -46,6 +66,23 @@ export default function Profile() {
             }}
             requiredMark={false}
           >
+            <Form.Item label="Profile photo">
+              <Space align="center" size="large">
+                <Avatar size={72} src={avatarUrl || undefined} icon={<UserOutlined />} />
+                <Upload
+                  accept="image/*"
+                  showUploadList={false}
+                  beforeUpload={beforeUpload}
+                >
+                  <Button icon={<UploadOutlined />} loading={uploading}>
+                    Upload photo
+                  </Button>
+                </Upload>
+              </Space>
+            </Form.Item>
+            <Form.Item name="avatar" hidden>
+              <Input />
+            </Form.Item>
             <Form.Item
               label="Name"
               name="name"
@@ -54,9 +91,6 @@ export default function Profile() {
               <Input />
             </Form.Item>
             <Form.Item label="Phone" name="phone">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Avatar URL" name="avatar">
               <Input />
             </Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} block size="large">

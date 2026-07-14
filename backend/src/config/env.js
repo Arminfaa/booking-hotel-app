@@ -21,4 +21,7 @@ export const env = {
   serviceFeePercent: Number(process.env.SERVICE_FEE_PERCENT || 10),
   taxPercent: Number(process.env.TAX_PERCENT || 8),
   isProd: process.env.NODE_ENV === "production",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
 };

@@ -7,13 +7,13 @@ import {
   CompassOutlined,
   DashboardOutlined,
   HomeOutlined,
+  LoginOutlined,
   LogoutOutlined,
   MenuOutlined,
   MessageOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../hooks/useAuth";
-import { useLocale } from "../../context/LocaleContext";
 import { tw } from "../../styles/tw";
 
 const { Header } = Layout;
@@ -30,7 +30,6 @@ function navLinkClass(active, drawer = false) {
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { t, locale, toggle } = useLocale();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -49,19 +48,19 @@ export default function Navbar() {
 
   const links = useMemo(() => {
     const items = [
-      { to: "/search", label: t("explore"), icon: <CompassOutlined /> },
-      { to: "/bookmarks", label: t("saved"), icon: <BookOutlined /> },
-      { to: "/bookings", label: t("trips"), icon: <CalendarOutlined /> },
-      { to: "/messages", label: t("messages"), icon: <MessageOutlined /> },
+      { to: "/search", label: "Explore", icon: <CompassOutlined /> },
+      { to: "/bookmarks", label: "Saved", icon: <BookOutlined /> },
+      { to: "/bookings", label: "Trips", icon: <CalendarOutlined /> },
+      { to: "/messages", label: "Messages", icon: <MessageOutlined /> },
     ];
     if (user?.role === "host" || user?.role === "admin") {
-      items.push({ to: "/host", label: t("host"), icon: <HomeOutlined /> });
+      items.push({ to: "/host", label: "Host", icon: <HomeOutlined /> });
     }
     if (user?.role === "admin") {
-      items.push({ to: "/admin", label: t("admin"), icon: <DashboardOutlined /> });
+      items.push({ to: "/admin", label: "Admin", icon: <DashboardOutlined /> });
     }
     return items;
-  }, [t, user?.role]);
+  }, [user?.role]);
 
   async function handleLogout() {
     await logout();
@@ -78,16 +77,16 @@ export default function Navbar() {
         <UserOutlined /> {user?.name?.split(" ")[0] || "Profile"}
       </Link>
       <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
-        {t("logout")}
+        Log out
       </Button>
     </>
   ) : (
     <>
       <Link to="/login" className={navLinkClass(false)}>
-        {t("login")}
+        <LoginOutlined /> Log in
       </Link>
       <Button type="primary" onClick={() => navigate("/register")}>
-        {t("signup")}
+        Sign up
       </Button>
     </>
   );
@@ -102,41 +101,46 @@ export default function Navbar() {
       ].join(" ")}
     >
       <div className={`${tw.container} flex h-full items-center justify-between gap-4`}>
-        <Link to="/" className="inline-flex items-center gap-2.5">
-          <span
-            className="size-[0.95rem] animate-[markPulse_4s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle_at_30%_30%,#b8f0de,#5ec4a8_50%,#1a3d45)]"
-            aria-hidden
+        <div className="flex min-w-0 items-center gap-6">
+          <Link to="/" className="inline-flex shrink-0 items-center gap-2.5">
+            <span
+              className="size-[0.95rem] animate-[markPulse_4s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle_at_30%_30%,#b8f0de,#5ec4a8_50%,#1a3d45)]"
+              aria-hidden
+            />
+            <Typography.Text className="!font-display !text-[1.45rem] !font-bold !tracking-tight !text-ink">
+              Cove
+            </Typography.Text>
+          </Link>
+
+          <nav className="hidden items-center min-[921px]:flex">
+            <Space size="middle" wrap={false}>
+              {links.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={navLinkClass(location.pathname.startsWith(item.to))}
+                >
+                  {item.icon} {item.label}
+                </Link>
+              ))}
+            </Space>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="hidden items-center min-[921px]:flex">
+            <Space size="middle" wrap={false}>
+              {authActions}
+            </Space>
+          </div>
+          <Button
+            className="!hidden text-ink max-[920px]:!inline-flex"
+            type="text"
+            icon={<MenuOutlined />}
+            aria-label="Open menu"
+            onClick={() => setOpen(true)}
           />
-          <Typography.Text className="!font-display !text-[1.45rem] !font-bold !tracking-tight !text-ink">
-            Cove
-          </Typography.Text>
-        </Link>
-
-        <nav className="hidden items-center min-[921px]:flex">
-          <Space size="middle" wrap={false}>
-            {links.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={navLinkClass(location.pathname.startsWith(item.to))}
-              >
-                {item.icon} {item.label}
-              </Link>
-            ))}
-            <Button type="text" onClick={toggle}>
-              {locale === "en" ? "FA" : "EN"}
-            </Button>
-            {authActions}
-          </Space>
-        </nav>
-
-        <Button
-          className="!hidden text-ink max-[920px]:!inline-flex"
-          type="text"
-          icon={<MenuOutlined />}
-          aria-label="Open menu"
-          onClick={() => setOpen(true)}
-        />
+        </div>
       </div>
 
       <Drawer
@@ -161,9 +165,6 @@ export default function Navbar() {
               {item.icon} {item.label}
             </Link>
           ))}
-          <Button type="text" onClick={toggle} className="!justify-start">
-            {locale === "en" ? "فارسی" : "English"}
-          </Button>
           <div className="mt-2 flex flex-col items-stretch gap-2.5 border-t border-line pt-4">
             {authActions}
           </div>
