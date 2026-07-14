@@ -45,12 +45,12 @@ export default function Bookings() {
     }
   }
 
-  if (loading) return <Loader label="Loading your trips..." />;
+  if (loading) return <Loader label="Loading your bookings..." />;
 
   return (
     <div className={tw.page}>
       <div className={tw.container}>
-        <span className={tw.eyebrow}>Trips</span>
+        <span className={tw.eyebrow}>Bookings</span>
         <Typography.Title level={1}>Your bookings</Typography.Title>
         <Typography.Paragraph type="secondary" className={`${tw.pageLead} !mb-7`}>
           Confirmed reservations live here with dates, totals, and cancel actions.
@@ -58,7 +58,7 @@ export default function Bookings() {
 
         {bookings.length === 0 ? (
           <EmptyState
-            title="No trips yet"
+            title="No bookings yet"
             message="Search a city and reserve your first stay."
             actionLabel="Explore stays"
             actionTo="/search"

@@ -18,11 +18,17 @@ import { tw } from "../../styles/tw";
 
 const { Header } = Layout;
 
-function navLinkClass(active, drawer = false) {
+function isNavItemActive(pathname, to) {
+  if (to === "/search") {
+    return pathname === "/search" || pathname.startsWith("/hotels/");
+  }
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
+
+function authLinkClass(active) {
   return [
-    "inline-flex items-center gap-1.5 text-[0.92rem] font-semibold leading-tight text-ink-soft transition-colors hover:text-ink",
-    active ? "text-sea!" : "",
-    drawer ? "py-2.5 text-[1.05rem]" : "",
+    "inline-flex items-center gap-1.5 text-[0.92rem] font-semibold leading-tight transition-colors duration-250",
+    active ? "!text-sea" : "text-ink-soft hover:text-ink",
   ]
     .filter(Boolean)
     .join(" ");
@@ -50,7 +56,7 @@ export default function Navbar() {
     const items = [
       { to: "/search", label: "Explore", icon: <CompassOutlined /> },
       { to: "/bookmarks", label: "Saved", icon: <BookOutlined /> },
-      { to: "/bookings", label: "Trips", icon: <CalendarOutlined /> },
+      { to: "/bookings", label: "Bookings", icon: <CalendarOutlined /> },
       { to: "/messages", label: "Messages", icon: <MessageOutlined /> },
     ];
     if (user?.role === "host" || user?.role === "admin") {
@@ -68,11 +74,13 @@ export default function Navbar() {
     navigate("/");
   }
 
-  const authActions = isAuthenticated ? (
+  const desktopAuthActions = isAuthenticated ? (
     <>
       <Link
         to="/profile"
-        className={navLinkClass(location.pathname === "/profile")}
+        className={authLinkClass(
+          location.pathname === "/profile" || location.pathname.startsWith("/profile/")
+        )}
       >
         <UserOutlined /> {user?.name?.split(" ")[0] || "Profile"}
       </Link>
@@ -82,60 +90,116 @@ export default function Navbar() {
     </>
   ) : (
     <>
-      <Link to="/login" className={navLinkClass(false)}>
+      <Link to="/login" className={authLinkClass(location.pathname === "/login")}>
         <LoginOutlined /> Log in
       </Link>
-      <Button type="primary" onClick={() => navigate("/register")}>
+      <Button
+        type="primary"
+        className={
+          location.pathname === "/register"
+            ? "!ring-2 !ring-sea !ring-offset-2 !ring-offset-paper"
+            : ""
+        }
+        onClick={() => navigate("/register")}
+      >
         Sign up
       </Button>
     </>
   );
 
+  const drawerAuthActions = isAuthenticated ? (
+    <div className="nav-drawer-auth">
+      <Link
+        to="/profile"
+        className={["nav-drawer-auth-link", location.pathname === "/profile" || location.pathname.startsWith("/profile/") ? "is-active" : ""]
+          .filter(Boolean)
+          .join(" ")}
+        onClick={() => setOpen(false)}
+      >
+        <UserOutlined />
+        <span>{user?.name || "Profile"}</span>
+      </Link>
+      <Button block icon={<LogoutOutlined />} onClick={handleLogout}>
+        Log out
+      </Button>
+    </div>
+  ) : (
+    <div className="nav-drawer-auth">
+      <Link
+        to="/login"
+        className={["nav-drawer-auth-link", location.pathname === "/login" ? "is-active" : ""]
+          .filter(Boolean)
+          .join(" ")}
+        onClick={() => setOpen(false)}
+      >
+        <LoginOutlined />
+        <span>Log in</span>
+      </Link>
+      <Button
+        type="primary"
+        block
+        className={
+          location.pathname === "/register"
+            ? "!ring-2 !ring-sea !ring-offset-2 !ring-offset-paper"
+            : ""
+        }
+        onClick={() => {
+          setOpen(false);
+          navigate("/register");
+        }}
+      >
+        Sign up
+      </Button>
+    </div>
+  );
+
   return (
     <Header
       className={[
-        "!sticky top-0 z-100 !h-[4.25rem] !leading-[4.25rem] !p-0 backdrop-blur-[18px] backdrop-saturate-120 transition-[background,border-color,box-shadow] duration-250",
+        "navbar-header !sticky top-0 z-100 !h-14 !p-0 !leading-none backdrop-blur-[18px] backdrop-saturate-120 transition-[background,border-color,box-shadow] duration-250 lg:!h-[4.25rem]",
         scrolled
           ? "!border-b !border-line !bg-paper/88 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
           : "!border-b !border-transparent !bg-paper/55",
       ].join(" ")}
     >
-      <div className={`${tw.container} flex h-full items-center justify-between gap-4`}>
-        <div className="flex min-w-0 items-center gap-6">
-          <Link to="/" className="inline-flex shrink-0 items-center gap-2.5">
+      <div className={`${tw.container} flex h-full items-center justify-between gap-2 sm:gap-4`}>
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6 lg:flex-none">
+          <Link to="/" className="inline-flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
             <span
-              className="size-[0.95rem] animate-[markPulse_4s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle_at_30%_30%,#b8f0de,#5ec4a8_50%,#1a3d45)]"
+              className="size-[0.85rem] shrink-0 animate-[markPulse_4s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle_at_30%_30%,#b8f0de,#5ec4a8_50%,#1a3d45)] sm:size-[0.95rem]"
               aria-hidden
             />
-            <Typography.Text className="!font-display !text-[1.45rem] !font-bold !tracking-tight !text-ink">
+            <Typography.Text className="truncate !font-display !text-[1.2rem] !font-bold !tracking-tight !text-ink sm:!text-[1.45rem]">
               Cove
             </Typography.Text>
           </Link>
 
-          <nav className="hidden items-center min-[921px]:flex">
-            <Space size="middle" wrap={false}>
-              {links.map((item) => (
+          <nav className="nav-links hidden! lg:flex!">
+            {links.map((item) => {
+              const active = isNavItemActive(location.pathname, item.to);
+              return (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={navLinkClass(location.pathname.startsWith(item.to))}
+                  className={["nav-link", active ? "is-active" : ""].filter(Boolean).join(" ")}
                 >
                   {item.icon} {item.label}
                 </Link>
-              ))}
-            </Space>
+              );
+            })}
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="hidden items-center min-[921px]:flex">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="hidden items-center lg:flex">
             <Space size="middle" wrap={false}>
-              {authActions}
+              {desktopAuthActions}
             </Space>
           </div>
           <Button
-            className="!hidden text-ink max-[920px]:!inline-flex"
+            className="inline-flex shrink-0 !text-ink lg:!hidden"
             type="text"
+            size="large"
             icon={<MenuOutlined />}
             aria-label="Open menu"
             onClick={() => setOpen(true)}
@@ -145,29 +209,39 @@ export default function Navbar() {
 
       <Drawer
         title={
-          <span className="font-display text-[1.45rem] font-bold tracking-tight text-ink">
+          <span className="font-display text-[1.35rem] font-bold tracking-tight text-ink sm:text-[1.45rem]">
             Cove
           </span>
         }
         placement="right"
         open={open}
         onClose={() => setOpen(false)}
-        width={300}
+        width="min(100vw - 1.5rem, 20rem)"
+        className="nav-drawer"
+        styles={{
+          header: { padding: "0.9rem 1rem" },
+          body: { padding: "0.75rem 1rem 1.25rem" },
+        }}
       >
-        <Flex vertical gap="middle">
-          {links.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={navLinkClass(location.pathname.startsWith(item.to), true)}
-              onClick={() => setOpen(false)}
-            >
-              {item.icon} {item.label}
-            </Link>
-          ))}
-          <div className="mt-2 flex flex-col items-stretch gap-2.5 border-t border-line pt-4">
-            {authActions}
-          </div>
+        <Flex vertical gap={4} className="nav-drawer-links">
+          {links.map((item) => {
+            const active = isNavItemActive(location.pathname, item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={["nav-link-drawer", active ? "is-active" : ""]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => setOpen(false)}
+              >
+                <span className="nav-link-drawer__icon">{item.icon}</span>
+                <span className="nav-link-drawer__label">{item.label}</span>
+              </Link>
+            );
+          })}
+          <div className="nav-drawer-divider" />
+          {drawerAuthActions}
         </Flex>
       </Drawer>
     </Header>

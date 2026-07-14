@@ -186,7 +186,7 @@ export default function Search() {
         </div>
 
         {loading ? (
-          <Loader label="Searching stays..." />
+          <Loader label="Searching stays..." fullPage={false} />
         ) : error ? (
           <EmptyState title="Could not load stays" message={error} />
         ) : hotels.length === 0 ? (
