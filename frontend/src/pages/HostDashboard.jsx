@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Checkbox, Input, InputNumber, Select, Upload } from "antd";
 import toast from "react-hot-toast";
 import { hotelsApi, uploadsApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
@@ -102,9 +103,7 @@ export default function HostDashboard() {
     });
   }
 
-  async function onUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function onUpload(file) {
     try {
       const res = await uploadsApi.image(file);
       setForm((s) => ({
@@ -115,6 +114,7 @@ export default function HostDashboard() {
     } catch (err) {
       toast.error(err.message);
     }
+    return false;
   }
 
   async function onSubmit(e) {
@@ -222,8 +222,9 @@ export default function HostDashboard() {
             ].map(([key, label]) => (
               <div className="field" key={key}>
                 <label htmlFor={key}>{label}</label>
-                <input
+                <Input
                   id={key}
+                  size="large"
                   value={form[key]}
                   onChange={(e) => setForm((s) => ({ ...s, [key]: e.target.value }))}
                   required
@@ -232,8 +233,9 @@ export default function HostDashboard() {
             ))}
             <div className="field">
               <label htmlFor="description">Description</label>
-              <textarea
+              <Input.TextArea
                 id="description"
+                rows={4}
                 value={form.description}
                 onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
                 required
@@ -247,11 +249,12 @@ export default function HostDashboard() {
               ].map(([key, label]) => (
                 <div className="field" key={key}>
                   <label htmlFor={key}>{label}</label>
-                  <input
+                  <InputNumber
                     id={key}
-                    type="number"
+                    size="large"
+                    style={{ width: "100%" }}
                     value={form[key]}
-                    onChange={(e) => setForm((s) => ({ ...s, [key]: e.target.value }))}
+                    onChange={(value) => setForm((s) => ({ ...s, [key]: value }))}
                     required
                   />
                 </div>
@@ -260,69 +263,76 @@ export default function HostDashboard() {
             <div className="host-form__row">
               <div className="field">
                 <label htmlFor="propertyType">Type</label>
-                <select
+                <Select
                   id="propertyType"
+                  size="large"
+                  style={{ width: "100%" }}
                   value={form.propertyType}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, propertyType: e.target.value }))
+                  onChange={(propertyType) =>
+                    setForm((s) => ({ ...s, propertyType }))
                   }
-                >
-                  {["apartment", "house", "villa", "cabin", "loft", "hotel"].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                  options={["apartment", "house", "villa", "cabin", "loft", "hotel"].map(
+                    (t) => ({ value: t, label: t })
+                  )}
+                />
               </div>
               <div className="field">
                 <label htmlFor="cancellationPolicy">Cancellation</label>
-                <select
+                <Select
                   id="cancellationPolicy"
+                  size="large"
+                  style={{ width: "100%" }}
                   value={form.cancellationPolicy}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, cancellationPolicy: e.target.value }))
+                  onChange={(cancellationPolicy) =>
+                    setForm((s) => ({ ...s, cancellationPolicy }))
                   }
-                >
-                  {["flexible", "moderate", "strict"].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                  options={["flexible", "moderate", "strict"].map((t) => ({
+                    value: t,
+                    label: t,
+                  }))}
+                />
               </div>
             </div>
             <div className="field">
               <label htmlFor="amenities">Amenities (comma-separated)</label>
-              <input
+              <Input
                 id="amenities"
+                size="large"
                 value={form.amenities}
                 onChange={(e) => setForm((s) => ({ ...s, amenities: e.target.value }))}
               />
             </div>
             <div className="field">
               <label htmlFor="images">Image URLs (one per line)</label>
-              <textarea
+              <Input.TextArea
                 id="images"
+                rows={3}
                 value={form.images}
                 onChange={(e) => setForm((s) => ({ ...s, images: e.target.value }))}
                 required
               />
             </div>
             <div className="field">
-              <label htmlFor="upload">Or upload image</label>
-              <input id="upload" type="file" accept="image/*" onChange={onUpload} />
+              <label>Or upload image</label>
+              <Upload
+                accept="image/*"
+                showUploadList={false}
+                beforeUpload={onUpload}
+              >
+                <button className="btn btn--soft" type="button">
+                  Choose image
+                </button>
+              </Upload>
             </div>
             {hotelId ? (
-              <label className="host-check">
-                <input
-                  type="checkbox"
-                  checked={form.isPublished}
-                  onChange={(e) =>
-                    setForm((s) => ({ ...s, isPublished: e.target.checked }))
-                  }
-                />
+              <Checkbox
+                checked={form.isPublished}
+                onChange={(e) =>
+                  setForm((s) => ({ ...s, isPublished: e.target.checked }))
+                }
+              >
                 Published
-              </label>
+              </Checkbox>
             ) : null}
             <button className="btn btn--primary" disabled={saving}>
               {saving ? "Saving..." : hotelId ? "Update listing" : "Create listing"}

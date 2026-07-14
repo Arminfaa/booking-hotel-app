@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Input } from "antd";
 import toast from "react-hot-toast";
 import { bookingsApi } from "../api";
 import Loader from "../components/ui/Loader";
@@ -140,8 +141,9 @@ export default function BookingDetail() {
                 <h3>Mock payment</h3>
                 <div className="field">
                   <label htmlFor="card">Card number</label>
-                  <input
+                  <Input
                     id="card"
+                    size="large"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
                     placeholder="4242 4242 4242 4242"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Select } from "antd";
 import toast from "react-hot-toast";
 import { adminApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
@@ -73,16 +74,15 @@ export default function Admin() {
                 <strong>{u.name}</strong>
                 <p>{u.email}</p>
               </div>
-              <select
+              <Select
                 value={u.role}
-                onChange={(e) => setRole(u.id, e.target.value)}
-              >
-                {["guest", "host", "admin"].map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+                style={{ minWidth: 120 }}
+                onChange={(role) => setRole(u.id, role)}
+                options={["guest", "host", "admin"].map((r) => ({
+                  value: r,
+                  label: r,
+                }))}
+              />
             </div>
           ))}
         </div>

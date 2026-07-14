@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Input } from "antd";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
 import "./Auth.css";
@@ -43,9 +44,10 @@ export default function Login() {
         <form onSubmit={onSubmit} className="auth-form">
           <div className="field">
             <label htmlFor="email">Email</label>
-            <input
+            <Input
               id="email"
               type="email"
+              size="large"
               value={form.email}
               onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
               required
@@ -53,9 +55,9 @@ export default function Login() {
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
-            <input
+            <Input.Password
               id="password"
-              type="password"
+              size="large"
               value={form.password}
               onChange={(e) =>
                 setForm((s) => ({ ...s, password: e.target.value }))

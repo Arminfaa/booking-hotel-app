@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Input, Select } from "antd";
 import toast from "react-hot-toast";
 import { HiOutlineBookmark, HiOutlineLink, HiStar } from "react-icons/hi";
 import { bookmarksApi, hotelsApi, messagesApi } from "../api";
@@ -213,8 +214,9 @@ export default function HotelDetail() {
               <form onSubmit={messageHost} className="review-form">
                 <div className="field">
                   <label htmlFor="host-msg">Your message</label>
-                  <textarea
+                  <Input.TextArea
                     id="host-msg"
+                    rows={4}
                     value={messageBody}
                     onChange={(e) => setMessageBody(e.target.value)}
                     required
@@ -253,27 +255,28 @@ export default function HotelDetail() {
                   <h3>Leave a review</h3>
                   <div className="field">
                     <label htmlFor="rating">Rating</label>
-                    <select
+                    <Select
                       id="rating"
+                      size="large"
+                      style={{ width: "100%" }}
                       value={reviewForm.rating}
-                      onChange={(e) =>
+                      onChange={(rating) =>
                         setReviewForm((s) => ({
                           ...s,
-                          rating: Number(e.target.value),
+                          rating,
                         }))
                       }
-                    >
-                      {[5, 4, 3, 2, 1].map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
+                      options={[5, 4, 3, 2, 1].map((n) => ({
+                        value: n,
+                        label: String(n),
+                      }))}
+                    />
                   </div>
                   <div className="field">
                     <label htmlFor="comment">Comment</label>
-                    <textarea
+                    <Input.TextArea
                       id="comment"
+                      rows={4}
                       value={reviewForm.comment}
                       onChange={(e) =>
                         setReviewForm((s) => ({

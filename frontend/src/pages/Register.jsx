@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Input, Select } from "antd";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
 import "./Auth.css";
@@ -42,8 +43,9 @@ export default function Register() {
         <form onSubmit={onSubmit} className="auth-form">
           <div className="field">
             <label htmlFor="name">Name</label>
-            <input
+            <Input
               id="name"
+              size="large"
               value={form.name}
               onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
               required
@@ -51,9 +53,10 @@ export default function Register() {
           </div>
           <div className="field">
             <label htmlFor="email">Email</label>
-            <input
+            <Input
               id="email"
               type="email"
+              size="large"
               value={form.email}
               onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
               required
@@ -61,9 +64,9 @@ export default function Register() {
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
-            <input
+            <Input.Password
               id="password"
-              type="password"
+              size="large"
               minLength={6}
               value={form.password}
               onChange={(e) =>
@@ -74,14 +77,17 @@ export default function Register() {
           </div>
           <div className="field">
             <label htmlFor="role">I want to</label>
-            <select
+            <Select
               id="role"
+              size="large"
+              style={{ width: "100%" }}
               value={form.role}
-              onChange={(e) => setForm((s) => ({ ...s, role: e.target.value }))}
-            >
-              <option value="guest">Book stays</option>
-              <option value="host">Host listings</option>
-            </select>
+              onChange={(role) => setForm((s) => ({ ...s, role }))}
+              options={[
+                { value: "guest", label: "Book stays" },
+                { value: "host", label: "Host listings" },
+              ]}
+            />
           </div>
           <button className="btn btn--primary" disabled={loading}>
             {loading ? "Creating..." : "Sign up"}

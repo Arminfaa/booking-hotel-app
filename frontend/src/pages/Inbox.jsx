@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Input } from "antd";
 import toast from "react-hot-toast";
 import { messagesApi } from "../api";
 import Loader from "../components/ui/Loader";
@@ -94,7 +95,8 @@ export default function Inbox() {
                     ))}
                   </div>
                   <form onSubmit={send} className="inbox__compose">
-                    <input
+                    <Input
+                      size="large"
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       placeholder="Write a message..."

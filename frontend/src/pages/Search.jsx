@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { InputNumber, Select } from "antd";
 import toast from "react-hot-toast";
 import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
@@ -110,14 +111,14 @@ export default function Search() {
           </button>
           <label>
             Radius (km)
-            <input
-              type="number"
+            <InputNumber
               min={5}
               max={500}
-              value={filters.radiusKm}
-              onChange={(e) => {
+              style={{ width: "100%" }}
+              value={filters.radiusKm ? Number(filters.radiusKm) : null}
+              onChange={(value) => {
                 const next = new URLSearchParams(searchParams);
-                if (e.target.value) next.set("radiusKm", e.target.value);
+                if (value != null) next.set("radiusKm", String(value));
                 else next.delete("radiusKm");
                 setSearchParams(next);
               }}
@@ -125,34 +126,31 @@ export default function Search() {
           </label>
           <label>
             Type
-            <select
-              value={filters.propertyType}
-              onChange={(e) => {
+            <Select
+              style={{ width: "100%" }}
+              allowClear
+              placeholder="Any"
+              value={filters.propertyType || undefined}
+              onChange={(value) => {
                 const next = new URLSearchParams(searchParams);
-                if (e.target.value) next.set("propertyType", e.target.value);
+                if (value) next.set("propertyType", value);
                 else next.delete("propertyType");
                 setSearchParams(next);
               }}
-            >
-              <option value="">Any</option>
-              {["apartment", "house", "villa", "cabin", "loft", "hotel"].map(
-                (type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                )
+              options={["apartment", "house", "villa", "cabin", "loft", "hotel"].map(
+                (type) => ({ value: type, label: type })
               )}
-            </select>
+            />
           </label>
           <label>
             Min price
-            <input
-              type="number"
+            <InputNumber
               min={0}
-              value={filters.minPrice}
-              onChange={(e) => {
+              style={{ width: "100%" }}
+              value={filters.minPrice ? Number(filters.minPrice) : null}
+              onChange={(value) => {
                 const next = new URLSearchParams(searchParams);
-                if (e.target.value) next.set("minPrice", e.target.value);
+                if (value != null) next.set("minPrice", String(value));
                 else next.delete("minPrice");
                 setSearchParams(next);
               }}
@@ -160,13 +158,13 @@ export default function Search() {
           </label>
           <label>
             Max price
-            <input
-              type="number"
+            <InputNumber
               min={0}
-              value={filters.maxPrice}
-              onChange={(e) => {
+              style={{ width: "100%" }}
+              value={filters.maxPrice ? Number(filters.maxPrice) : null}
+              onChange={(value) => {
                 const next = new URLSearchParams(searchParams);
-                if (e.target.value) next.set("maxPrice", e.target.value);
+                if (value != null) next.set("maxPrice", String(value));
                 else next.delete("maxPrice");
                 setSearchParams(next);
               }}
