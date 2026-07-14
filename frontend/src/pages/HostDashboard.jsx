@@ -11,15 +11,27 @@ import {
   Row,
   Select,
   Space,
+  Tooltip,
   Typography,
   Upload,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { hotelsApi, uploadsApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
 import Loader from "../components/ui/Loader";
+import LocationPicker from "../components/hotels/LocationPicker";
 import { tw } from "../styles/tw";
+import {
+  applyApiErrorsToForm,
+  getFieldLabel,
+  summarizeApiErrors,
+} from "../utils/formErrors";
 
 const emptyForm = {
   title: "",
@@ -42,6 +54,52 @@ const emptyForm = {
   isPublished: true,
 };
 
+const requiredText = (label) => [{ required: true, message: `${label} is required` }];
+
+const coordinateRules = (label, min, max) => [
+  { required: true, message: "Pick a location on the map" },
+  {
+    validator: (_, value) => {
+      if (value === "" || value == null) {
+        return Promise.reject(new Error(`${label} is required`));
+      }
+      const num = Number(value);
+      if (Number.isNaN(num)) {
+        return Promise.reject(new Error(`${label} must be a number`));
+      }
+      if (num < min || num > max) {
+        return Promise.reject(
+          new Error(`${label} must be between ${min} and ${max}`)
+        );
+      }
+      return Promise.resolve();
+    },
+  },
+];
+
+const imageRules = [
+  { required: true, message: "Add at least one image URL or upload an image" },
+  {
+    validator: (_, value) => {
+      const urls = String(value || "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      if (!urls.length) {
+        return Promise.reject(
+          new Error("Add at least one image URL or upload an image")
+        );
+      }
+      return Promise.resolve();
+    },
+  },
+];
+
+function handleFormError(form, err) {
+  applyApiErrorsToForm(form, err);
+  toast.error(summarizeApiErrors(err));
+}
+
 export default function HostDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -50,6 +108,8 @@ export default function HostDashboard() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const latitude = Form.useWatch("latitude", form);
+  const longitude = Form.useWatch("longitude", form);
 
   async function load(fillId = hotelId) {
     setLoading(true);
@@ -146,9 +206,9 @@ export default function HostDashboard() {
         pricePerNight: Number(values.pricePerNight),
         cleaningFee: Number(values.cleaningFee),
         maxGuests: Number(values.maxGuests),
-        bedrooms: Number(values.bedrooms),
-        beds: Number(values.beds),
-        bathrooms: Number(values.bathrooms),
+        bedrooms: Number(values.bedrooms ?? 1),
+        beds: Number(values.beds ?? 1),
+        bathrooms: Number(values.bathrooms ?? 1),
         amenities: String(values.amenities || "")
           .split(",")
           .map((a) => a.trim())
@@ -171,9 +231,17 @@ export default function HostDashboard() {
       await load(null);
       navigate("/host");
     } catch (err) {
-      toast.error(err.message);
+      handleFormError(form, err);
     } finally {
       setSaving(false);
+    }
+  }
+
+  function onFinishFailed({ errorFields }) {
+    const first = errorFields[0];
+    if (first) {
+      form.scrollToField(first.name, { behavior: "smooth", block: "center" });
+      toast.error(`${getFieldLabel(first.name[0])}: ${first.errors[0]}`);
     }
   }
 
@@ -205,26 +273,53 @@ export default function HostDashboard() {
                   className="shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
                   size="small"
                 >
-                  <FlexImg hotel={hotel} />
-                  <Typography.Title level={4} className="!mt-3 !mb-1">
-                    {hotel.title}
-                  </Typography.Title>
-                  <Typography.Text type="secondary">
-                    {hotel.city} · {hotel.isPublished ? "Published" : "Draft"}
-                  </Typography.Text>
-                  <Space wrap className="!mt-3">
-                    <Link to={`/host/${hotel._id}`}>
-                      <Button size="small">Edit</Button>
-                    </Link>
-                    <Link to={`/hotels/${hotel._id}`}>
-                      <Button size="small" type="text">
-                        View
-                      </Button>
-                    </Link>
-                    <Button size="small" danger onClick={() => removeHotel(hotel._id)}>
-                      Delete
-                    </Button>
-                  </Space>
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={hotel.images?.[0]}
+                      alt={hotel.title}
+                      className="h-20 w-20 shrink-0 rounded-cove-sm border border-line object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <Typography.Title level={5} className="!mb-1 !mt-0 line-clamp-2">
+                        {hotel.title}
+                      </Typography.Title>
+                      <Typography.Text type="secondary">
+                        {hotel.city} · {hotel.isPublished ? "Published" : "Draft"}
+                      </Typography.Text>
+                    </div>
+                    <Space size={2} className="shrink-0">
+                      <Tooltip title="View">
+                        <Link to={`/hotels/${hotel._id}`}>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<EyeOutlined />}
+                            aria-label="View listing"
+                          />
+                        </Link>
+                      </Tooltip>
+                      <Tooltip title="Edit">
+                        <Link to={`/host/${hotel._id}`}>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<EditOutlined />}
+                            aria-label="Edit listing"
+                          />
+                        </Link>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <Button
+                          type="text"
+                          size="small"
+                          danger
+                          icon={<DeleteOutlined />}
+                          aria-label="Delete listing"
+                          onClick={() => removeHotel(hotel._id)}
+                        />
+                      </Tooltip>
+                    </Space>
+                  </div>
                 </Card>
               ))}
               {!hotels.length ? (
@@ -243,45 +338,186 @@ export default function HostDashboard() {
                 layout="vertical"
                 size="large"
                 onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
                 initialValues={emptyForm}
                 requiredMark={false}
               >
                 <Row gutter={12}>
-                  {["title", "city", "country", "address", "latitude", "longitude"].map(
-                    (key) => (
-                      <Col xs={24} sm={12} key={key}>
-                        <Form.Item
-                          label={key.charAt(0).toUpperCase() + key.slice(1)}
-                          name={key}
-                          rules={[{ required: true, message: "Required" }]}
-                        >
-                          <Input />
-                        </Form.Item>
-                      </Col>
-                    )
-                  )}
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Title" name="title" rules={requiredText("Title")}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="City" name="city" rules={requiredText("City")}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Country" name="country" rules={requiredText("Country")}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24}>
+                    <Form.Item label="Address" name="address" rules={requiredText("Address")}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
                 </Row>
+                <Form.Item
+                  noStyle
+                  shouldUpdate={(prev, cur) =>
+                    prev.latitude !== cur.latitude || prev.longitude !== cur.longitude
+                  }
+                >
+                  {() => {
+                    const latError = form.getFieldError("latitude")[0];
+                    const lngError = form.getFieldError("longitude")[0];
+                    const locationError = latError || lngError;
+
+                    return (
+                      <Form.Item
+                        label="Location on map"
+                        required
+                        validateStatus={locationError ? "error" : undefined}
+                        help={
+                          locationError ||
+                          "Click the map to place your listing. Drag the pin to fine-tune."
+                        }
+                      >
+                        <LocationPicker
+                          latitude={latitude}
+                          longitude={longitude}
+                          onChange={({ latitude: nextLat, longitude: nextLng }) => {
+                            form.setFieldsValue({
+                              latitude: nextLat,
+                              longitude: nextLng,
+                            });
+                            form.validateFields(["latitude", "longitude"]);
+                          }}
+                        />
+                      </Form.Item>
+                    );
+                  }}
+                </Form.Item>
+                <Form.Item
+                  name="latitude"
+                  hidden
+                  rules={coordinateRules("Latitude", -90, 90)}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="longitude"
+                  hidden
+                  rules={coordinateRules("Longitude", -180, 180)}
+                >
+                  <Input />
+                </Form.Item>
                 <Form.Item
                   label="Description"
                   name="description"
-                  rules={[{ required: true, message: "Required" }]}
+                  rules={requiredText("Description")}
                 >
                   <Input.TextArea rows={4} />
                 </Form.Item>
                 <Row gutter={12}>
                   <Col xs={24} sm={8}>
-                    <Form.Item label="Price / night" name="pricePerNight" rules={[{ required: true }]}>
-                      <InputNumber style={{ width: "100%" }} min={0} />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8}>
-                    <Form.Item label="Cleaning fee" name="cleaningFee" rules={[{ required: true }]}>
-                      <InputNumber style={{ width: "100%" }} min={0} />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8}>
-                    <Form.Item label="Max guests" name="maxGuests" rules={[{ required: true }]}>
+                    <Form.Item
+                      label="Price / night"
+                      name="pricePerNight"
+                      rules={[
+                        { required: true, message: "Price per night is required" },
+                        {
+                          type: "number",
+                          min: 1,
+                          message: "Price per night must be at least 1",
+                        },
+                      ]}
+                    >
                       <InputNumber style={{ width: "100%" }} min={1} />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={8}>
+                    <Form.Item
+                      label="Cleaning fee"
+                      name="cleaningFee"
+                      rules={[
+                        { required: true, message: "Cleaning fee is required" },
+                        {
+                          type: "number",
+                          min: 0,
+                          message: "Cleaning fee cannot be negative",
+                        },
+                      ]}
+                    >
+                      <InputNumber style={{ width: "100%" }} min={0} />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={8}>
+                    <Form.Item
+                      label="Max guests"
+                      name="maxGuests"
+                      rules={[
+                        { required: true, message: "Max guests is required" },
+                        {
+                          type: "number",
+                          min: 1,
+                          message: "Max guests must be at least 1",
+                        },
+                      ]}
+                    >
+                      <InputNumber style={{ width: "100%" }} min={1} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={12}>
+                  <Col xs={24} sm={8}>
+                    <Form.Item
+                      label="Bedrooms"
+                      name="bedrooms"
+                      rules={[
+                        { required: true, message: "Bedrooms is required" },
+                        {
+                          type: "number",
+                          min: 0,
+                          message: "Bedrooms cannot be negative",
+                        },
+                      ]}
+                    >
+                      <InputNumber style={{ width: "100%" }} min={0} />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={8}>
+                    <Form.Item
+                      label="Beds"
+                      name="beds"
+                      rules={[
+                        { required: true, message: "Beds is required" },
+                        {
+                          type: "number",
+                          min: 1,
+                          message: "Beds must be at least 1",
+                        },
+                      ]}
+                    >
+                      <InputNumber style={{ width: "100%" }} min={1} />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={8}>
+                    <Form.Item
+                      label="Bathrooms"
+                      name="bathrooms"
+                      rules={[
+                        { required: true, message: "Bathrooms is required" },
+                        {
+                          type: "number",
+                          min: 0,
+                          message: "Bathrooms cannot be negative",
+                        },
+                      ]}
+                    >
+                      <InputNumber style={{ width: "100%" }} min={0} />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -312,7 +548,8 @@ export default function HostDashboard() {
                 <Form.Item
                   label="Image URLs (one per line)"
                   name="images"
-                  rules={[{ required: true, message: "Required" }]}
+                  rules={imageRules}
+                  extra="Paste URLs or use the upload button below."
                 >
                   <Input.TextArea rows={3} />
                 </Form.Item>
@@ -345,12 +582,3 @@ export default function HostDashboard() {
   );
 }
 
-function FlexImg({ hotel }) {
-  return (
-    <img
-      src={hotel.images?.[0]}
-      alt={hotel.title}
-      className="h-[140px] w-full rounded-cove-sm border border-line object-cover"
-    />
-  );
-}

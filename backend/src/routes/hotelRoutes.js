@@ -11,6 +11,7 @@ import {
   listHotels,
   myHotels,
   updateHotel,
+  updateHotelValidators,
 } from "../controllers/hotelController.js";
 import {
   createReview,
@@ -38,7 +39,15 @@ router.post(
   validate,
   createHotel
 );
-router.patch("/:id", protect, authorize("host", "admin"), idParam, validate, updateHotel);
+router.patch(
+  "/:id",
+  protect,
+  authorize("host", "admin"),
+  idParam,
+  updateHotelValidators,
+  validate,
+  updateHotel
+);
 router.delete("/:id", protect, authorize("host", "admin"), idParam, validate, deleteHotel);
 
 router.post(
