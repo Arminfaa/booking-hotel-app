@@ -18,7 +18,7 @@ export default function Home() {
   useEffect(() => {
     let alive = true;
     hotelsApi
-      .list({ limit: 6 })
+      .list({ limit: 8 })
       .then((res) => {
         if (alive) setHotels(res.data.hotels);
       })

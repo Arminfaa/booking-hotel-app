@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button, Col, InputNumber, Row, Select, Typography } from "antd";
+import { Button, Col, InputNumber, Pagination, Row, Select, Typography } from "antd";
 import { EnvironmentOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { hotelsApi } from "../api";
@@ -11,12 +11,17 @@ import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
 import { tw } from "../styles/tw";
 
+const PAGE_SIZE = 10;
+
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [hotels, setHotels] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: PAGE_SIZE, total: 0, pages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
+
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
 
   const filters = useMemo(
     () => ({
@@ -43,15 +48,17 @@ export default function Search() {
     );
 
     hotelsApi
-      .list({ ...params, limit: 24 })
+      .list({ ...params, page, limit: PAGE_SIZE })
       .then((res) => {
         if (!alive) return;
         setHotels(res.data.hotels);
+        setPagination(res.data.pagination);
       })
       .catch((err) => {
         if (!alive) return;
         setError(err.message);
         setHotels([]);
+        setPagination({ page: 1, limit: PAGE_SIZE, total: 0, pages: 1 });
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -60,7 +67,7 @@ export default function Search() {
     return () => {
       alive = false;
     };
-  }, [filters]);
+  }, [filters, page]);
 
   function nearMe() {
     if (!navigator.geolocation) {
@@ -74,6 +81,7 @@ export default function Search() {
         next.set("lat", String(pos.coords.latitude));
         next.set("lng", String(pos.coords.longitude));
         next.set("radiusKm", filters.radiusKm || "80");
+        next.delete("page");
         setSearchParams(next);
         setGeoLoading(false);
       },
@@ -89,7 +97,16 @@ export default function Search() {
     const next = new URLSearchParams(searchParams);
     if (value != null && value !== "") next.set(key, String(value));
     else next.delete(key);
+    if (key !== "page") next.delete("page");
     setSearchParams(next);
+  }
+
+  function changePage(nextPage) {
+    const next = new URLSearchParams(searchParams);
+    if (nextPage <= 1) next.delete("page");
+    else next.set("page", String(nextPage));
+    setSearchParams(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const queryString = searchParams.toString()
@@ -111,6 +128,7 @@ export default function Search() {
             if (filters.lat) next.lat = filters.lat;
             if (filters.lng) next.lng = filters.lng;
             if (filters.radiusKm) next.radiusKm = filters.radiusKm;
+            delete next.page;
             setSearchParams(next);
           }}
         />
@@ -181,7 +199,10 @@ export default function Search() {
           <Row gutter={[28, 28]}>
             <Col xs={24} lg={14} xl={15}>
               <Typography.Text type="secondary" className="font-semibold">
-                {hotels.length} stays
+                {pagination.total} stays
+                {pagination.pages > 1
+                  ? ` · page ${pagination.page} of ${pagination.pages}`
+                  : ""}
               </Typography.Text>
               <div className={`${tw.hotelGrid} mt-4`}>
                 {hotels.map((hotel) => (
@@ -192,6 +213,17 @@ export default function Search() {
                   />
                 ))}
               </div>
+              {pagination.pages > 1 ? (
+                <div className="mt-8 flex justify-center">
+                  <Pagination
+                    current={pagination.page}
+                    total={pagination.total}
+                    pageSize={PAGE_SIZE}
+                    onChange={changePage}
+                    showSizeChanger={false}
+                  />
+                </div>
+              ) : null}
             </Col>
             <Col xs={24} lg={10} xl={9}>
               <div
