@@ -74,7 +74,10 @@ export default function HotelMap({ hotels = [], height = 420 }) {
   const fallback = [48.8566, 2.3522];
 
   return (
-    <div className="hotel-map overflow-hidden rounded-cove border border-line max-sm:max-h-[350px]" style={{ height }}>
+    <div
+      className="hotel-map overflow-hidden rounded-cove border border-line max-[599px]:min-h-[300px]! max-[599px]:max-h-[calc(100dvh-280px)]!"
+      style={{ height }}
+    >
       <MapContainer
         center={fallback}
         zoom={3}
