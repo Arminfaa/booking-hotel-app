@@ -81,8 +81,13 @@ export async function clearAuthCookies(res, refreshToken) {
       { revokedAt: new Date() }
     );
   }
-  res.clearCookie(ACCESS_COOKIE, { path: "/" });
-  res.clearCookie(REFRESH_COOKIE, { path: "/" });
+  const clearOpts = {
+    path: "/",
+    secure: env.isProd,
+    sameSite: env.isProd ? "none" : "lax",
+  };
+  res.clearCookie(ACCESS_COOKIE, clearOpts);
+  res.clearCookie(REFRESH_COOKIE, clearOpts);
 }
 
 export function readAccessToken(req) {
