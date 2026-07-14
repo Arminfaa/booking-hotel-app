@@ -8,6 +8,16 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
 import { formatMoney } from "../../utils/format";
 
+function googleMapsDirectionsUrl(lat, lng) {
+  const params = new URLSearchParams({
+    api: "1",
+    origin: "Current Location",
+    destination: `${lat},${lng}`,
+    travelmode: "driving",
+  });
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -57,8 +67,17 @@ export default function HotelMap({ hotels = [], height = 420 }) {
                 <strong>{hotel.title}</strong>
                 <br />
                 {formatMoney(hotel.pricePerNight)} / night
-                <br />
-                <Link to={`/hotels/${hotel._id}`}>View stay</Link>
+                <div className="mt-2 flex flex-col gap-1.5">
+                  <Link to={`/hotels/${hotel._id}`}>View stay</Link>
+                  <a
+                    href={googleMapsDirectionsUrl(lat, lng)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block rounded-cove-sm border border-line bg-sea/10 px-2.5 py-1 text-center text-[0.85rem] font-semibold text-sea no-underline transition-colors hover:bg-sea/20"
+                  >
+                    Directions
+                  </a>
+                </div>
               </Popup>
             </Marker>
           );

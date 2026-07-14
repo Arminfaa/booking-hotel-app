@@ -139,7 +139,7 @@ export default function HotelDetail() {
     <div className={tw.page}>
       <div className={tw.container}>
         <Flex
-          className="mb-6 animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both]"
+          className="mb-6! animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both]"
           justify="space-between"
           gap={16}
           wrap
