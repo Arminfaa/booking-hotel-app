@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Select } from "antd";
+import { Button, Card, Col, Row, Select, Space, Statistic, Typography } from "antd";
 import toast from "react-hot-toast";
 import { adminApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
 import Loader from "../components/ui/Loader";
 import { formatMoney } from "../utils/format";
-import "./Host.css";
+import { tw } from "../styles/tw";
 
 export default function Admin() {
   const { user } = useAuth();
@@ -55,58 +55,73 @@ export default function Admin() {
   if (loading) return <Loader label="Loading admin..." />;
 
   return (
-    <div className="section">
-      <div className="container">
-        <p className="section__eyebrow">Admin</p>
-        <h1 className="section__title">Control panel</h1>
-        <div className="admin-stats">
-          <div><strong>{overview?.users}</strong><span>Users</span></div>
-          <div><strong>{overview?.hotels}</strong><span>Hotels</span></div>
-          <div><strong>{overview?.bookings}</strong><span>Bookings</span></div>
-          <div><strong>{formatMoney(overview?.revenue || 0)}</strong><span>Revenue</span></div>
-        </div>
+    <div className={tw.page}>
+      <div className={tw.container}>
+        <span className={tw.eyebrow}>Admin</span>
+        <Typography.Title level={1}>Control panel</Typography.Title>
 
-        <h2>Users</h2>
-        <div className="admin-table">
+        <Row gutter={[16, 16]} className="!mb-8">
+          {[
+            ["Users", overview?.users],
+            ["Hotels", overview?.hotels],
+            ["Bookings", overview?.bookings],
+            ["Revenue", formatMoney(overview?.revenue || 0)],
+          ].map(([title, value]) => (
+            <Col xs={12} md={6} key={title}>
+              <Card>
+                <Statistic title={title} value={value} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        <Typography.Title level={3}>Users</Typography.Title>
+        <Space direction="vertical" size="middle" className="mb-8 w-full">
           {users.map((u) => (
-            <div key={u.id} className="admin-row">
-              <div>
-                <strong>{u.name}</strong>
-                <p>{u.email}</p>
-              </div>
-              <Select
-                value={u.role}
-                style={{ minWidth: 120 }}
-                onChange={(role) => setRole(u.id, role)}
-                options={["guest", "host", "admin"].map((r) => ({
-                  value: r,
-                  label: r,
-                }))}
-              />
-            </div>
+            <Card key={u.id} size="small">
+              <Row align="middle" justify="space-between" gutter={[12, 12]}>
+                <Col>
+                  <Typography.Text strong>{u.name}</Typography.Text>
+                  <br />
+                  <Typography.Text type="secondary">{u.email}</Typography.Text>
+                </Col>
+                <Col>
+                  <Select
+                    value={u.role}
+                    className="min-w-[120px]"
+                    onChange={(role) => setRole(u.id, role)}
+                    options={["guest", "host", "admin"].map((r) => ({
+                      value: r,
+                      label: r,
+                    }))}
+                  />
+                </Col>
+              </Row>
+            </Card>
           ))}
-        </div>
+        </Space>
 
-        <h2>Listings</h2>
-        <div className="admin-table">
+        <Typography.Title level={3}>Listings</Typography.Title>
+        <Space direction="vertical" size="middle" className="w-full">
           {hotels.map((h) => (
-            <div key={h._id} className="admin-row">
-              <div>
-                <strong>{h.title}</strong>
-                <p>
-                  {h.city} · host {h.host?.name}
-                </p>
-              </div>
-              <button
-                className="btn btn--soft"
-                type="button"
-                onClick={() => toggleHotel(h._id, h.isPublished)}
-              >
-                {h.isPublished ? "Unpublish" : "Publish"}
-              </button>
-            </div>
+            <Card key={h._id} size="small">
+              <Row align="middle" justify="space-between" gutter={[12, 12]}>
+                <Col>
+                  <Typography.Text strong>{h.title}</Typography.Text>
+                  <br />
+                  <Typography.Text type="secondary">
+                    {h.city} · host {h.host?.name}
+                  </Typography.Text>
+                </Col>
+                <Col>
+                  <Button onClick={() => toggleHotel(h._id, h.isPublished)}>
+                    {h.isPublished ? "Unpublish" : "Publish"}
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
           ))}
-        </div>
+        </Space>
       </div>
     </div>
   );

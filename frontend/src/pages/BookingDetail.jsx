@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Input } from "antd";
+import { Button, Card, Form, Input, Space, Tag, Typography } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { bookingsApi } from "../api";
 import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
 import { formatDisplayDate, formatMoney } from "../utils/format";
-import "./Trips.css";
+import { tw } from "../styles/tw";
 
 export default function BookingDetail() {
   const { id } = useParams();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [cardNumber, setCardNumber] = useState("4242424242424242");
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
@@ -48,11 +48,10 @@ export default function BookingDetail() {
     }
   }
 
-  async function pay(e) {
-    e.preventDefault();
+  async function pay(values) {
     setPaying(true);
     try {
-      const res = await bookingsApi.pay(id, { cardNumber });
+      const res = await bookingsApi.pay(id, { cardNumber: values.cardNumber });
       setBooking(res.data.booking);
       toast.success(
         res.data.email?.preview
@@ -81,92 +80,94 @@ export default function BookingDetail() {
   const unpaid = booking.paymentStatus === "unpaid" && booking.status !== "cancelled";
 
   return (
-    <div className="section">
-      <div className="container booking-detail animate-rise">
-        <Link to="/bookings" className="back-link">
-          ← All trips
+    <div className={tw.page}>
+      <div className={`${tw.container} animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both]`}>
+        <Link
+          to="/bookings"
+          className="mb-4 inline-flex items-center gap-1.5 font-semibold text-ink-soft hover:text-sea"
+        >
+          <ArrowLeftOutlined /> All trips
         </Link>
-        <p className="section__eyebrow">Confirmation</p>
-        <h1 className="section__title">{booking.hotel?.title}</h1>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          <span className={`badge badge--${booking.status}`}>{booking.status}</span>
-          <span className="badge">{booking.paymentStatus}</span>
-          <span className="badge">{booking.cancellationPolicy} policy</span>
-        </div>
+        <span className={tw.eyebrow}>Confirmation</span>
+        <Typography.Title level={1}>{booking.hotel?.title}</Typography.Title>
+        <Space wrap className="!mb-6">
+          <Tag color="processing">{booking.status}</Tag>
+          <Tag>{booking.paymentStatus}</Tag>
+          <Tag color="cyan">{booking.cancellationPolicy} policy</Tag>
+        </Space>
 
-        <div className="booking-detail__grid">
+        <div className="grid gap-6 min-[880px]:grid-cols-[1.1fr_0.9fr] min-[880px]:items-start">
           <img
+            className="max-h-[420px] w-full rounded-cove border border-line object-cover"
             src={booking.hotel?.images?.[0]}
             alt={booking.hotel?.title || "Stay"}
           />
-          <div className="booking-detail__panel">
-            <p>
-              <strong>Dates</strong>
+          <Card>
+            <Typography.Paragraph>
+              <Typography.Text strong>Dates</Typography.Text>
               <br />
-              {formatDisplayDate(booking.checkIn)} →{" "}
-              {formatDisplayDate(booking.checkOut)}
-            </p>
-            <p>
-              <strong>Guests</strong>
+              {formatDisplayDate(booking.checkIn)} → {formatDisplayDate(booking.checkOut)}
+            </Typography.Paragraph>
+            <Typography.Paragraph>
+              <Typography.Text strong>Guests</Typography.Text>
               <br />
               {booking.guests?.adults} adults
-              {booking.guests?.children
-                ? `, ${booking.guests.children} children`
-                : ""}
-            </p>
-            <p>
-              <strong>Price breakdown</strong>
+              {booking.guests?.children ? `, ${booking.guests.children} children` : ""}
+            </Typography.Paragraph>
+            <Typography.Paragraph>
+              <Typography.Text strong>Price breakdown</Typography.Text>
               <br />
               Lodging {formatMoney(booking.pricePerNight * booking.nights)} · Cleaning{" "}
               {formatMoney(booking.cleaningFee)} · Service{" "}
-              {formatMoney(booking.serviceFee || 0)} · Tax{" "}
-              {formatMoney(booking.tax || 0)}
-            </p>
-            <p>
-              <strong>Total</strong>
+              {formatMoney(booking.serviceFee || 0)} · Tax {formatMoney(booking.tax || 0)}
+            </Typography.Paragraph>
+            <Typography.Paragraph>
+              <Typography.Text strong>Total</Typography.Text>
               <br />
               {formatMoney(booking.totalPrice)}
               {booking.paymentRef ? ` · ref ${booking.paymentRef}` : ""}
-            </p>
+            </Typography.Paragraph>
             {booking.refundAmount ? (
-              <p>
-                <strong>Refund</strong>
+              <Typography.Paragraph>
+                <Typography.Text strong>Refund</Typography.Text>
                 <br />
                 {formatMoney(booking.refundAmount)}
-              </p>
+              </Typography.Paragraph>
             ) : null}
 
             {unpaid ? (
-              <form onSubmit={pay} className="pay-form">
-                <h3>Mock payment</h3>
-                <div className="field">
-                  <label htmlFor="card">Card number</label>
-                  <Input
-                    id="card"
-                    size="large"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    placeholder="4242 4242 4242 4242"
-                    required
-                  />
-                </div>
-                <button className="btn btn--primary" disabled={paying}>
-                  {paying ? "Processing..." : `Pay ${formatMoney(booking.totalPrice)}`}
-                </button>
-              </form>
+              <Card type="inner" title="Mock payment" className="!mb-4">
+                <Form
+                  layout="vertical"
+                  onFinish={pay}
+                  initialValues={{ cardNumber: "4242424242424242" }}
+                  requiredMark={false}
+                >
+                  <Form.Item
+                    label="Card number"
+                    name="cardNumber"
+                    rules={[{ required: true, message: "Card number required" }]}
+                  >
+                    <Input size="large" placeholder="4242 4242 4242 4242" />
+                  </Form.Item>
+                  <Button type="primary" htmlType="submit" loading={paying} block size="large">
+                    Pay {formatMoney(booking.totalPrice)}
+                  </Button>
+                </Form>
+              </Card>
             ) : null}
 
-            <div className="trip-card__actions">
-              <Link className="btn btn--soft" to={`/hotels/${booking.hotel?._id}`}>
-                View stay
+            <Space wrap>
+              <Link to={`/hotels/${booking.hotel?._id}`}>
+                <Button>View stay</Button>
               </Link>
               {booking.status === "confirmed" || booking.status === "pending" ? (
-                <button className="btn btn--danger" type="button" onClick={cancel}>
+                <Button danger onClick={cancel}>
                   Cancel booking
-                </button>
+                </Button>
               ) : null}
-            </div>
-          </div>
+            </Space>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { Button, Typography } from "antd";
+import { ShareAltOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { bookmarksApi } from "../api";
 import HotelCard from "../components/hotels/HotelCard";
 import EmptyState from "../components/ui/EmptyState";
 import Loader from "../components/ui/Loader";
+import { tw } from "../styles/tw";
 
 export default function Bookmarks() {
   const [bookmarks, setBookmarks] = useState([]);
@@ -40,20 +43,22 @@ export default function Bookmarks() {
   const hotels = bookmarks.map((b) => b.hotel).filter(Boolean);
 
   return (
-    <div className="section">
-      <div className="container">
-        <div className="home-head">
+    <div className={tw.page}>
+      <div className={tw.container}>
+        <div className={tw.pageHead}>
           <div>
-            <p className="section__eyebrow">Saved</p>
-            <h1 className="section__title">Bookmarks</h1>
-            <p className="section__lead">
+            <span className={tw.eyebrow}>Saved</span>
+            <Typography.Title level={1} className="!mb-1">
+              Bookmarks
+            </Typography.Title>
+            <Typography.Paragraph type="secondary" className={tw.pageLead}>
               Places you’re considering — synced to your account.
-            </p>
+            </Typography.Paragraph>
           </div>
           {hotels.length ? (
-            <button className="btn btn--soft" type="button" onClick={shareWishlist}>
+            <Button icon={<ShareAltOutlined />} onClick={shareWishlist} size="large">
               Share wishlist
-            </button>
+            </Button>
           ) : null}
         </div>
 
@@ -65,7 +70,7 @@ export default function Bookmarks() {
             actionTo="/search"
           />
         ) : (
-          <div className="hotel-grid">
+          <div className={tw.hotelGrid}>
             {hotels.map((hotel) => (
               <HotelCard key={hotel._id} hotel={hotel} />
             ))}
