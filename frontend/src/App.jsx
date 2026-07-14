@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import ScrollToTop from "./components/layout/ScrollToTop";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -23,6 +24,7 @@ import { tw } from "./styles/tw";
 function Shell() {
   return (
     <div className={tw.shell}>
+      <ScrollToTop />
       <Navbar />
       <main className={tw.main}>
         <Outlet />

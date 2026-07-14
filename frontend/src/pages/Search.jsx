@@ -106,7 +106,6 @@ export default function Search() {
     if (nextPage <= 1) next.delete("page");
     else next.set("page", String(nextPage));
     setSearchParams(next);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const queryString = searchParams.toString()
