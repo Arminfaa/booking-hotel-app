@@ -89,6 +89,11 @@ const hotelSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    cancellationPolicy: {
+      type: String,
+      enum: ["flexible", "moderate", "strict"],
+      default: "moderate",
+    },
     host: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

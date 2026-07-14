@@ -39,16 +39,43 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    serviceFee: {
+      type: Number,
+      default: 0,
+    },
+    tax: {
+      type: Number,
+      default: 0,
+    },
     totalPrice: {
       type: Number,
       required: true,
       min: 0,
     },
+    refundAmount: {
+      type: Number,
+      default: 0,
+    },
+    cancellationPolicy: {
+      type: String,
+      enum: ["flexible", "moderate", "strict"],
+      default: "moderate",
+    },
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled", "completed"],
-      default: "confirmed",
+      default: "pending",
       index: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "paid", "refunded"],
+      default: "unpaid",
+      index: true,
+    },
+    paymentRef: {
+      type: String,
+      default: "",
     },
     specialRequests: {
       type: String,

@@ -25,6 +25,16 @@ export default function Bookmarks() {
     };
   }, []);
 
+  async function shareWishlist() {
+    try {
+      const res = await bookmarksApi.share();
+      await navigator.clipboard.writeText(res.data.url);
+      toast.success("Share link copied");
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
   if (loading) return <Loader label="Loading saved stays..." />;
 
   const hotels = bookmarks.map((b) => b.hotel).filter(Boolean);
@@ -32,11 +42,20 @@ export default function Bookmarks() {
   return (
     <div className="section">
       <div className="container">
-        <p className="section__eyebrow">Saved</p>
-        <h1 className="section__title">Bookmarks</h1>
-        <p className="section__lead" style={{ marginBottom: "1.75rem" }}>
-          Places you’re considering — synced to your account.
-        </p>
+        <div className="home-head">
+          <div>
+            <p className="section__eyebrow">Saved</p>
+            <h1 className="section__title">Bookmarks</h1>
+            <p className="section__lead">
+              Places you’re considering — synced to your account.
+            </p>
+          </div>
+          {hotels.length ? (
+            <button className="btn btn--soft" type="button" onClick={shareWishlist}>
+              Share wishlist
+            </button>
+          ) : null}
+        </div>
 
         {hotels.length === 0 ? (
           <EmptyState

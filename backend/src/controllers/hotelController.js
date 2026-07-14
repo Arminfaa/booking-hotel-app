@@ -14,6 +14,9 @@ export const listHotelValidators = [
   query("propertyType").optional().isString(),
   query("checkIn").optional().isISO8601(),
   query("checkOut").optional().isISO8601(),
+  query("lat").optional().isFloat({ min: -90, max: 90 }),
+  query("lng").optional().isFloat({ min: -180, max: 180 }),
+  query("radiusKm").optional().isFloat({ min: 1, max: 500 }),
   query("page").optional().isInt({ min: 1 }),
   query("limit").optional().isInt({ min: 1, max: 50 }),
 ];
@@ -29,6 +32,7 @@ export const createHotelValidators = [
   body("images").isArray({ min: 1 }),
   body("pricePerNight").isFloat({ min: 1 }),
   body("maxGuests").isInt({ min: 1 }),
+  body("cancellationPolicy").optional().isIn(["flexible", "moderate", "strict"]),
 ];
 
 export const listHotels = asyncHandler(async (req, res) => {
@@ -37,9 +41,13 @@ export const listHotels = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const filter = { isPublished: true };
+  const lat = req.query.lat != null ? Number(req.query.lat) : null;
+  const lng = req.query.lng != null ? Number(req.query.lng) : null;
+  const radiusKm = Number(req.query.radiusKm || 50);
+  const useGeo = Number.isFinite(lat) && Number.isFinite(lng);
 
   if (req.query.city) {
-    filter.city = new RegExp(`^${escapeRegex(req.query.city)}$`, "i");
+    filter.city = new RegExp(escapeRegex(req.query.city), "i");
   }
 
   if (req.query.q) {
@@ -68,17 +76,39 @@ export const listHotels = asyncHandler(async (req, res) => {
       checkIn: { $lt: checkOut },
       checkOut: { $gt: checkIn },
     }).distinct("hotel");
-    filter._id = { $nin: busy };
+    filter._id = { ...(filter._id || {}), $nin: busy };
+  }
+
+  if (useGeo) {
+    filter.location = {
+      $near: {
+        $geometry: { type: "Point", coordinates: [lng, lat] },
+        $maxDistance: radiusKm * 1000,
+      },
+    };
+  }
+
+  let queryBuilder = Hotel.find(filter).populate("host", "name avatar");
+
+  if (!useGeo) {
+    queryBuilder = queryBuilder.sort(
+      req.query.q ? { score: { $meta: "textScore" } } : { createdAt: -1 }
+    );
   }
 
   const [hotels, total] = await Promise.all([
-    Hotel.find(filter)
-      .populate("host", "name avatar")
-      .sort(req.query.q ? { score: { $meta: "textScore" } } : { createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
-    Hotel.countDocuments(filter),
+    queryBuilder.skip(skip).limit(limit),
+    Hotel.countDocuments(
+      useGeo
+        ? Object.fromEntries(
+            Object.entries(filter).filter(([key]) => key !== "location")
+          )
+        : filter
+    ),
   ]);
+
+  // For geo queries countDocuments with $near is unsupported; approximate with result length on page 1
+  const counted = useGeo ? hotels.length + skip : total;
 
   res.json({
     success: true,
@@ -87,17 +117,29 @@ export const listHotels = asyncHandler(async (req, res) => {
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit) || 1,
+        total: counted,
+        pages: Math.ceil(counted / limit) || 1,
       },
     },
   });
 });
 
+export const myHotels = asyncHandler(async (req, res) => {
+  const hotels = await Hotel.find({ host: req.user._id }).sort({ createdAt: -1 });
+  res.json({ success: true, data: { hotels } });
+});
+
 export const getHotel = asyncHandler(async (req, res) => {
-  const hotel = await Hotel.findById(req.params.id).populate("host", "name avatar phone createdAt");
-  if (!hotel || !hotel.isPublished) {
-    throw new ApiError(404, "Hotel not found");
+  const hotel = await Hotel.findById(req.params.id).populate(
+    "host",
+    "name avatar phone createdAt"
+  );
+  if (!hotel) throw new ApiError(404, "Hotel not found");
+  if (!hotel.isPublished) {
+    const isOwner = req.user && hotel.host._id.toString() === req.user._id.toString();
+    if (!isOwner && req.user?.role !== "admin") {
+      throw new ApiError(404, "Hotel not found");
+    }
   }
   res.json({ success: true, data: { hotel } });
 });
@@ -112,6 +154,34 @@ export const checkAvailability = asyncHandler(async (req, res) => {
 
   const available = !(await hasBookingOverlap(hotel._id, checkIn, checkOut));
   res.json({ success: true, data: { available } });
+});
+
+export const hotelCalendar = asyncHandler(async (req, res) => {
+  const hotel = await Hotel.findById(req.params.id);
+  if (!hotel) throw new ApiError(404, "Hotel not found");
+
+  const from = req.query.from ? new Date(req.query.from) : new Date();
+  const to = req.query.to
+    ? new Date(req.query.to)
+    : new Date(Date.now() + 1000 * 60 * 60 * 24 * 120);
+
+  const bookings = await Booking.find({
+    hotel: hotel._id,
+    status: { $in: ["pending", "confirmed"] },
+    checkIn: { $lt: to },
+    checkOut: { $gt: from },
+  }).select("checkIn checkOut status");
+
+  res.json({
+    success: true,
+    data: {
+      blocked: bookings.map((b) => ({
+        checkIn: b.checkIn,
+        checkOut: b.checkOut,
+        status: b.status,
+      })),
+    },
+  });
 });
 
 export const createHotel = asyncHandler(async (req, res) => {
@@ -132,6 +202,7 @@ export const createHotel = asyncHandler(async (req, res) => {
     bathrooms,
     propertyType,
     amenities,
+    cancellationPolicy,
   } = req.body;
 
   const hotel = await Hotel.create({
@@ -150,6 +221,7 @@ export const createHotel = asyncHandler(async (req, res) => {
     bathrooms,
     propertyType,
     amenities,
+    cancellationPolicy,
     host: req.user._id,
   });
 
@@ -180,6 +252,7 @@ export const updateHotel = asyncHandler(async (req, res) => {
     "bathrooms",
     "propertyType",
     "amenities",
+    "cancellationPolicy",
     "isPublished",
   ];
 

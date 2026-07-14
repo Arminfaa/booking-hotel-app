@@ -1,0 +1,72 @@
+.inbox__layout {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  min-height: 420px;
+}
+
+.inbox__list {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+}
+
+.inbox__list a {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--line);
+}
+
+.inbox__list a.active {
+  border-color: var(--sea-deep);
+  background: rgba(126, 184, 168, 0.15);
+}
+
+.inbox__list span {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.inbox__thread {
+  padding: 1rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.85rem;
+}
+
+.inbox__messages {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.inbox__messages article {
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(15, 39, 68, 0.04);
+}
+
+.inbox__compose {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+}
+
+.inbox__compose input {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 860px) {
+  .inbox__layout {
+    grid-template-columns: 280px 1fr;
+  }
+}

@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
+import { LocaleProvider } from "./context/LocaleContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
@@ -13,6 +14,10 @@ import Bookings from "./pages/Bookings";
 import BookingDetail from "./pages/BookingDetail";
 import Bookmarks from "./pages/Bookmarks";
 import Profile from "./pages/Profile";
+import HostDashboard from "./pages/HostDashboard";
+import Admin from "./pages/Admin";
+import Inbox from "./pages/Inbox";
+import SharedWishlist from "./pages/SharedWishlist";
 import NotFound from "./pages/NotFound";
 
 function Shell() {
@@ -29,51 +34,94 @@ function Shell() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Toaster position="top-center" />
-      <Routes>
-        <Route element={<Shell />}>
-          <Route index element={<Home />} />
-          <Route path="search" element={<Search />} />
-          <Route path="hotels/:id" element={<HotelDetail />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route
-            path="bookings"
-            element={
-              <ProtectedRoute>
-                <Bookings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="bookings/:id"
-            element={
-              <ProtectedRoute>
-                <BookingDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="bookmarks"
-            element={
-              <ProtectedRoute>
-                <Bookmarks />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="hotels" element={<Navigate to="/search" replace />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </AuthProvider>
+    <LocaleProvider>
+      <AuthProvider>
+        <Toaster position="top-center" />
+        <Routes>
+          <Route element={<Shell />}>
+            <Route index element={<Home />} />
+            <Route path="search" element={<Search />} />
+            <Route path="hotels/:id" element={<HotelDetail />} />
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="wishlist/:token" element={<SharedWishlist />} />
+            <Route
+              path="bookings"
+              element={
+                <ProtectedRoute>
+                  <Bookings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="bookings/:id"
+              element={
+                <ProtectedRoute>
+                  <BookingDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="bookmarks"
+              element={
+                <ProtectedRoute>
+                  <Bookmarks />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="host"
+              element={
+                <ProtectedRoute>
+                  <HostDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="host/:hotelId"
+              element={
+                <ProtectedRoute>
+                  <HostDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin"
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="messages"
+              element={
+                <ProtectedRoute>
+                  <Inbox />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="messages/:id"
+              element={
+                <ProtectedRoute>
+                  <Inbox />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="hotels" element={<Navigate to="/search" replace />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </LocaleProvider>
   );
 }

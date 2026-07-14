@@ -28,3 +28,6 @@ npm-debug.log*
 coverage/
 *.local
 frontend/dist/
+
+backend/uploads/
+!backend/uploads/.gitkeep

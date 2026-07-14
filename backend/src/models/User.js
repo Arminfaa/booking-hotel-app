@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { env } from "../config/env.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -50,14 +48,6 @@ userSchema.pre("save", async function hashPassword(next) {
 
 userSchema.methods.comparePassword = function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
-};
-
-userSchema.methods.signToken = function signToken() {
-  return jwt.sign(
-    { id: this._id, role: this.role },
-    env.jwtSecret,
-    { expiresIn: env.jwtExpiresIn }
-  );
 };
 
 userSchema.methods.toSafeJSON = function toSafeJSON() {

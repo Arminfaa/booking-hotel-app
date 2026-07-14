@@ -11,6 +11,7 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
+    role: "guest",
   });
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export default function Register() {
     try {
       await register(form);
       toast.success("Account created");
-      navigate("/");
+      navigate(form.role === "host" ? "/host" : "/");
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -36,7 +37,7 @@ export default function Register() {
         <p className="section__eyebrow">Account</p>
         <h1>Join Cove</h1>
         <p className="auth-lead">
-          Create a guest account to reserve stays and save bookmarks.
+          Create an account to reserve stays, save bookmarks, or host listings.
         </p>
         <form onSubmit={onSubmit} className="auth-form">
           <div className="field">
@@ -70,6 +71,17 @@ export default function Register() {
               }
               required
             />
+          </div>
+          <div className="field">
+            <label htmlFor="role">I want to</label>
+            <select
+              id="role"
+              value={form.role}
+              onChange={(e) => setForm((s) => ({ ...s, role: e.target.value }))}
+            >
+              <option value="guest">Book stays</option>
+              <option value="host">Host listings</option>
+            </select>
           </div>
           <button className="btn btn--primary" disabled={loading}>
             {loading ? "Creating..." : "Sign up"}

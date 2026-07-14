@@ -1,0 +1,60 @@
+.occ-cal {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.occ-cal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.occ-cal__week,
+.occ-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.occ-cal__week {
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.occ-cal__day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(126, 184, 168, 0.12);
+}
+
+.occ-cal__day--busy {
+  background: rgba(201, 107, 74, 0.2);
+  color: var(--coral);
+  text-decoration: line-through;
+}
+
+.occ-cal__legend {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.occ-cal__swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 4px;
+  background: rgba(201, 107, 74, 0.2);
+}
