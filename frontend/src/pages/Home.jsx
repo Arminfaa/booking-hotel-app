@@ -5,7 +5,7 @@ import { ArrowRightOutlined } from "@ant-design/icons";
 import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
 import HotelCard from "../components/hotels/HotelCard";
-import Loader from "../components/ui/Loader";
+import { HotelCardSkeletonGrid } from "../components/hotels/HotelCardSkeleton";
 import { tw } from "../styles/tw";
 
 const HERO_IMAGE =
@@ -83,7 +83,7 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <Loader label="Loading featured stays..." fullPage={false} />
+            <HotelCardSkeletonGrid count={8} />
           ) : (
             <div className={tw.hotelGrid}>
               {hotels.map((hotel) => (
