@@ -132,56 +132,75 @@ export default function Search() {
           }}
         />
 
-        <div
-          className={`${tw.surface} my-5 mb-8 grid grid-cols-[auto_repeat(4,minmax(0,1fr))] items-end gap-3.5 p-4 max-[960px]:grid-cols-2 max-[520px]:grid-cols-1`}
-        >
-          <Button
-            icon={<EnvironmentOutlined />}
-            onClick={nearMe}
-            loading={geoLoading}
-          >
-            Near me
-          </Button>
-          <div className={tw.field}>
-            <label className={tw.fieldLabel}>Radius (km)</label>
-            <InputNumber
-              min={5}
-              max={500}
-              className="w-full"
-              value={filters.radiusKm ? Number(filters.radiusKm) : null}
-              onChange={(value) => patchParam("radiusKm", value)}
-            />
+        <div className={`${tw.surface} my-5 mb-8 p-[1.05rem]`}>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <span className={tw.fieldLabel}>Refine results</span>
+            {filters.lat && filters.lng ? (
+              <Typography.Text type="secondary" className="text-xs">
+                Showing stays within {filters.radiusKm || 80} km of you
+              </Typography.Text>
+            ) : null}
           </div>
-          <div className={tw.field}>
-            <label className={tw.fieldLabel}>Type</label>
-            <Select
-              allowClear
-              placeholder="Any"
-              className="w-full"
-              value={filters.propertyType || undefined}
-              onChange={(value) => patchParam("propertyType", value)}
-              options={["apartment", "house", "villa", "cabin", "loft", "hotel"].map(
-                (type) => ({ value: type, label: type })
-              )}
-            />
-          </div>
-          <div className={tw.field}>
-            <label className={tw.fieldLabel}>Min price</label>
-            <InputNumber
-              min={0}
-              className="w-full"
-              value={filters.minPrice ? Number(filters.minPrice) : null}
-              onChange={(value) => patchParam("minPrice", value)}
-            />
-          </div>
-          <div className={tw.field}>
-            <label className={tw.fieldLabel}>Max price</label>
-            <InputNumber
-              min={0}
-              className="w-full"
-              value={filters.maxPrice ? Number(filters.maxPrice) : null}
-              onChange={(value) => patchParam("maxPrice", value)}
-            />
+          <div className="grid grid-cols-2 items-end gap-3.5 max-[520px]:grid-cols-1 lg:grid-cols-4">
+            <div className={`${tw.field} col-span-2 max-[520px]:col-span-1 lg:col-span-1`}>
+              <label className={tw.fieldLabel}>Nearby</label>
+              <div className="flex gap-2">
+                <Button
+                  size="large"
+                  type={filters.lat && filters.lng ? "primary" : "default"}
+                  icon={<EnvironmentOutlined />}
+                  onClick={nearMe}
+                  loading={geoLoading}
+                  className="shrink-0"
+                >
+                  Near me
+                </Button>
+                <InputNumber
+                  size="large"
+                  min={5}
+                  max={500}
+                  addonAfter="km"
+                  className="min-w-0 flex-1"
+                  placeholder="80"
+                  value={filters.radiusKm ? Number(filters.radiusKm) : null}
+                  onChange={(value) => patchParam("radiusKm", value)}
+                />
+              </div>
+            </div>
+            <div className={tw.field}>
+              <label className={tw.fieldLabel}>Type</label>
+              <Select
+                size="large"
+                allowClear
+                placeholder="Any"
+                className="w-full"
+                value={filters.propertyType || undefined}
+                onChange={(value) => patchParam("propertyType", value)}
+                options={["apartment", "house", "villa", "cabin", "loft", "hotel"].map(
+                  (type) => ({ value: type, label: type })
+                )}
+              />
+            </div>
+            <div className={tw.field}>
+              <label className={tw.fieldLabel}>Min price</label>
+              <InputNumber
+                size="large"
+                min={0}
+                className="w-full!"
+                value={filters.minPrice ? Number(filters.minPrice) : null}
+                onChange={(value) => patchParam("minPrice", value)}
+              />
+            </div>
+            <div className={tw.field}>
+              <label className={tw.fieldLabel}>Max price</label>
+              <InputNumber
+                size="large"
+                min={0}
+                className="w-full!"
+                value={filters.maxPrice ? Number(filters.maxPrice) : null}
+                onChange={(value) => patchParam("maxPrice", value)}
+              />
+            </div>
           </div>
         </div>
 
