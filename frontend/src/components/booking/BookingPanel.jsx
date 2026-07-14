@@ -70,7 +70,7 @@ export default function BookingPanel({ hotel, initial = {} }) {
 
   return (
     <Card
-      className="sticky! top-[85px] max-h-[calc(100dvh-100px)] animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove max-lg:static [&_.ant-card-body]:flex [&_.ant-card-body]:max-h-[inherit] [&_.ant-card-body]:min-h-0 [&_.ant-card-body]:flex-col [&_.ant-card-body]:overflow-hidden [&_.ant-card-body]:p-0!"
+      className="lg:sticky! lg:top-[85px] lg:max-h-[calc(100dvh-100px)] animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] shadow-cove max-lg:static [&_.ant-card-body]:flex [&_.ant-card-body]:max-h-[inherit] [&_.ant-card-body]:min-h-0 [&_.ant-card-body]:flex-col [&_.ant-card-body]:overflow-hidden [&_.ant-card-body]:p-0!"
       bordered
     >
       <form onSubmit={handleBook} className="flex min-h-0 flex-1 flex-col">
