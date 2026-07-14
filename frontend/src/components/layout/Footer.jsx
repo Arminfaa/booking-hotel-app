@@ -33,9 +33,17 @@ export default function Footer() {
             </div>
           </Col>
           <Col xs={24} md={6}>
-            <Typography.Text type="secondary" className="block text-[0.88rem]">
-              © {new Date().getFullYear()} Cove Booking
-            </Typography.Text>
+            <p className="m-0 text-center text-[0.88rem] text-ink-soft sm:text-end">
+              © All rights reserved for{" "}
+              <a
+                href="https://arminfatehi.ir/en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline text-ink transition-colors hover:text-sea"
+              >
+                Armin Fatehi
+              </a>
+            </p>
           </Col>
         </Row>
       </div>
