@@ -63,9 +63,10 @@ export const adminApi = {
 };
 
 export const uploadsApi = {
-  image: (file) => {
+  image: (file, folder = "cove") => {
     const form = new FormData();
     form.append("image", file);
+    form.append("folder", folder);
     return api
       .post("/uploads/image", form, {
         headers: { "Content-Type": "multipart/form-data" },
