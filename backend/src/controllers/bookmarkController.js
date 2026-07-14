@@ -1,7 +1,8 @@
-import { Bookmark } from "../models/Bookmark.js";
+import { Bookmark, WishlistShare } from "../models/Bookmark.js";
 import { Hotel } from "../models/Hotel.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { env } from "../config/env.js";
 
 export const listBookmarks = asyncHandler(async (req, res) => {
   const bookmarks = await Bookmark.find({ user: req.user._id })
@@ -53,4 +54,37 @@ export const checkBookmark = asyncHandler(async (req, res) => {
     hotel: req.params.hotelId,
   });
   res.json({ success: true, data: { bookmarked: Boolean(bookmark) } });
+});
+
+export const createShareLink = asyncHandler(async (req, res) => {
+  const share = await WishlistShare.findOneAndUpdate(
+    { user: req.user._id },
+    { user: req.user._id },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  res.json({
+    success: true,
+    data: {
+      token: share.token,
+      url: `${env.clientUrl}/wishlist/${share.token}`,
+    },
+  });
+});
+
+export const getSharedWishlist = asyncHandler(async (req, res) => {
+  const share = await WishlistShare.findOne({ token: req.params.token }).populate(
+    "user",
+    "name"
+  );
+  if (!share) throw new ApiError(404, "Wishlist not found");
+
+  const bookmarks = await Bookmark.find({ user: share.user._id }).populate("hotel");
+  res.json({
+    success: true,
+    data: {
+      owner: share.user,
+      hotels: bookmarks.map((b) => b.hotel).filter(Boolean),
+    },
+  });
 });

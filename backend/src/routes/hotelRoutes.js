@@ -5,9 +5,11 @@ import {
   createHotelValidators,
   deleteHotel,
   getHotel,
+  hotelCalendar,
   idParam,
   listHotelValidators,
   listHotels,
+  myHotels,
   updateHotel,
 } from "../controllers/hotelController.js";
 import {
@@ -16,14 +18,16 @@ import {
   deleteReview,
   listReviews,
 } from "../controllers/reviewController.js";
-import { authorize, protect } from "../middleware/auth.js";
+import { authorize, optionalAuth, protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
 router.get("/", listHotelValidators, validate, listHotels);
-router.get("/:id", idParam, validate, getHotel);
+router.get("/mine/list", protect, authorize("host", "admin"), myHotels);
+router.get("/:id", optionalAuth, idParam, validate, getHotel);
 router.get("/:id/availability", idParam, validate, checkAvailability);
+router.get("/:id/calendar", idParam, validate, hotelCalendar);
 router.get("/:id/reviews", idParam, validate, listReviews);
 
 router.post(

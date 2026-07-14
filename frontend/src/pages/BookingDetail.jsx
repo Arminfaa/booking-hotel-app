@@ -11,6 +11,8 @@ export default function BookingDetail() {
   const { id } = useParams();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cardNumber, setCardNumber] = useState("4242424242424242");
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -34,9 +36,32 @@ export default function BookingDetail() {
     try {
       const res = await bookingsApi.cancel(id);
       setBooking(res.data.booking);
-      toast.success("Booking cancelled");
+      const refund = res.data?.refund;
+      toast.success(
+        refund
+          ? `Cancelled · refund ${formatMoney(refund.refundAmount)} (${refund.refundPercent}%)`
+          : "Booking cancelled"
+      );
     } catch (err) {
       toast.error(err.message);
+    }
+  }
+
+  async function pay(e) {
+    e.preventDefault();
+    setPaying(true);
+    try {
+      const res = await bookingsApi.pay(id, { cardNumber });
+      setBooking(res.data.booking);
+      toast.success(
+        res.data.email?.preview
+          ? "Paid · confirmation email queued (see API logs)"
+          : "Payment successful"
+      );
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setPaying(false);
     }
   }
 
@@ -52,6 +77,8 @@ export default function BookingDetail() {
     );
   }
 
+  const unpaid = booking.paymentStatus === "unpaid" && booking.status !== "cancelled";
+
   return (
     <div className="section">
       <div className="container booking-detail animate-rise">
@@ -60,7 +87,11 @@ export default function BookingDetail() {
         </Link>
         <p className="section__eyebrow">Confirmation</p>
         <h1 className="section__title">{booking.hotel?.title}</h1>
-        <span className={`badge badge--${booking.status}`}>{booking.status}</span>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <span className={`badge badge--${booking.status}`}>{booking.status}</span>
+          <span className="badge">{booking.paymentStatus}</span>
+          <span className="badge">{booking.cancellationPolicy} policy</span>
+        </div>
 
         <div className="booking-detail__grid">
           <img
@@ -83,22 +114,46 @@ export default function BookingDetail() {
                 : ""}
             </p>
             <p>
-              <strong>Nights</strong>
+              <strong>Price breakdown</strong>
               <br />
-              {booking.nights}
+              Lodging {formatMoney(booking.pricePerNight * booking.nights)} · Cleaning{" "}
+              {formatMoney(booking.cleaningFee)} · Service{" "}
+              {formatMoney(booking.serviceFee || 0)} · Tax{" "}
+              {formatMoney(booking.tax || 0)}
             </p>
             <p>
-              <strong>Total paid</strong>
+              <strong>Total</strong>
               <br />
               {formatMoney(booking.totalPrice)}
+              {booking.paymentRef ? ` · ref ${booking.paymentRef}` : ""}
             </p>
-            {booking.specialRequests ? (
+            {booking.refundAmount ? (
               <p>
-                <strong>Requests</strong>
+                <strong>Refund</strong>
                 <br />
-                {booking.specialRequests}
+                {formatMoney(booking.refundAmount)}
               </p>
             ) : null}
+
+            {unpaid ? (
+              <form onSubmit={pay} className="pay-form">
+                <h3>Mock payment</h3>
+                <div className="field">
+                  <label htmlFor="card">Card number</label>
+                  <input
+                    id="card"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    placeholder="4242 4242 4242 4242"
+                    required
+                  />
+                </div>
+                <button className="btn btn--primary" disabled={paying}>
+                  {paying ? "Processing..." : `Pay ${formatMoney(booking.totalPrice)}`}
+                </button>
+              </form>
+            ) : null}
+
             <div className="trip-card__actions">
               <Link className="btn btn--soft" to={`/hotels/${booking.hotel?._id}`}>
                 View stay

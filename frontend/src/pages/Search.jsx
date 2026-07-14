@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
 import HotelCard from "../components/hotels/HotelCard";
@@ -13,6 +14,7 @@ export default function Search() {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const filters = useMemo(
     () => ({
@@ -23,6 +25,9 @@ export default function Search() {
       propertyType: searchParams.get("propertyType") || "",
       minPrice: searchParams.get("minPrice") || "",
       maxPrice: searchParams.get("maxPrice") || "",
+      lat: searchParams.get("lat") || "",
+      lng: searchParams.get("lng") || "",
+      radiusKm: searchParams.get("radiusKm") || "",
     }),
     [searchParams]
   );
@@ -55,6 +60,29 @@ export default function Search() {
     };
   }, [filters]);
 
+  function nearMe() {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported");
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const next = new URLSearchParams(searchParams);
+        next.set("lat", String(pos.coords.latitude));
+        next.set("lng", String(pos.coords.longitude));
+        next.set("radiusKm", filters.radiusKm || "80");
+        setSearchParams(next);
+        setGeoLoading(false);
+      },
+      () => {
+        toast.error("Could not get your location");
+        setGeoLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
   const queryString = searchParams.toString()
     ? `?${searchParams.toString()}`
     : "";
@@ -67,10 +95,34 @@ export default function Search() {
         <SearchBar
           compact
           initial={filters}
-          onSearch={(params) => setSearchParams(params)}
+          onSearch={(params) => {
+            const next = { ...params };
+            if (filters.lat) next.lat = filters.lat;
+            if (filters.lng) next.lng = filters.lng;
+            if (filters.radiusKm) next.radiusKm = filters.radiusKm;
+            setSearchParams(next);
+          }}
         />
 
         <div className="search-filters">
+          <button className="btn btn--soft" type="button" onClick={nearMe} disabled={geoLoading}>
+            {geoLoading ? "Locating..." : "Near me"}
+          </button>
+          <label>
+            Radius (km)
+            <input
+              type="number"
+              min={5}
+              max={500}
+              value={filters.radiusKm}
+              onChange={(e) => {
+                const next = new URLSearchParams(searchParams);
+                if (e.target.value) next.set("radiusKm", e.target.value);
+                else next.delete("radiusKm");
+                setSearchParams(next);
+              }}
+            />
+          </label>
           <label>
             Type
             <select

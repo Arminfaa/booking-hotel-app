@@ -8,6 +8,13 @@
   box-shadow: var(--shadow);
 }
 
+.booking-panel__policy {
+  margin: -0.35rem 0 1rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
 .booking-panel__price {
   margin-bottom: 1rem;
   font-size: 1.05rem;

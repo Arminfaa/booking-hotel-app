@@ -2,7 +2,9 @@ import { Router } from "express";
 import {
   login,
   loginValidators,
+  logout,
   me,
+  refresh,
   register,
   registerValidators,
   updateMe,
@@ -14,6 +16,8 @@ const router = Router();
 
 router.post("/register", registerValidators, validate, register);
 router.post("/login", loginValidators, validate, login);
+router.post("/refresh", refresh);
+router.post("/logout", logout);
 router.get("/me", protect, me);
 router.patch("/me", protect, updateMe);
 

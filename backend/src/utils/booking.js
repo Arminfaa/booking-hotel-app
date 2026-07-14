@@ -1,24 +1,40 @@
-import { Booking } from "../models/Booking.js";
-
-const ACTIVE_STATUSES = ["pending", "confirmed"];
+import { env } from "../config/env.js";
 
 export function nightsBetween(checkIn, checkOut) {
   const ms = new Date(checkOut) - new Date(checkIn);
   return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }
 
-export async function hasBookingOverlap(hotelId, checkIn, checkOut, excludeId) {
-  const query = {
-    hotel: hotelId,
-    status: { $in: ACTIVE_STATUSES },
-    checkIn: { $lt: new Date(checkOut) },
-    checkOut: { $gt: new Date(checkIn) },
-  };
-  if (excludeId) query._id = { $ne: excludeId };
-  const conflict = await Booking.findOne(query).select("_id");
-  return Boolean(conflict);
+export function calcPricing({ pricePerNight, cleaningFee = 0, nights }) {
+  const lodging = pricePerNight * nights;
+  const serviceFee = Math.round((lodging * env.serviceFeePercent) / 100);
+  const taxable = lodging + cleaningFee + serviceFee;
+  const tax = Math.round((taxable * env.taxPercent) / 100);
+  const totalPrice = lodging + cleaningFee + serviceFee + tax;
+  return { lodging, cleaningFee, serviceFee, tax, totalPrice };
 }
 
-export function calcTotal({ pricePerNight, cleaningFee = 0, nights }) {
-  return pricePerNight * nights + cleaningFee;
+export function refundForCancel({ totalPrice, checkIn, policy }) {
+  const daysUntil = Math.ceil((new Date(checkIn) - Date.now()) / 86400000);
+  let percent = 0;
+
+  if (policy === "flexible") {
+    percent = daysUntil >= 1 ? 100 : 0;
+  } else if (policy === "moderate") {
+    if (daysUntil >= 5) percent = 100;
+    else if (daysUntil >= 2) percent = 50;
+    else percent = 0;
+  } else {
+    // strict
+    if (daysUntil >= 14) percent = 100;
+    else if (daysUntil >= 7) percent = 50;
+    else percent = 0;
+  }
+
+  return {
+    refundPercent: percent,
+    refundAmount: Math.round((totalPrice * percent) / 100),
+  };
 }
+
+export { hasBookingOverlap } from "./bookingOverlap.js";

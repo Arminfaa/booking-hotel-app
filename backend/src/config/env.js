@@ -15,6 +15,10 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
+  refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
+  serviceFeePercent: Number(process.env.SERVICE_FEE_PERCENT || 10),
+  taxPercent: Number(process.env.TAX_PERCENT || 8),
+  isProd: process.env.NODE_ENV === "production",
 };

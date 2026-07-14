@@ -1,9 +1,16 @@
+import crypto from "crypto";
 import { body } from "express-validator";
 import { Booking } from "../models/Booking.js";
 import { Hotel } from "../models/Hotel.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { calcTotal, hasBookingOverlap, nightsBetween } from "../utils/booking.js";
+import {
+  calcPricing,
+  hasBookingOverlap,
+  nightsBetween,
+  refundForCancel,
+} from "../utils/booking.js";
+import { sendBookingConfirmation } from "../services/email.js";
 
 export const createBookingValidators = [
   body("hotelId").isMongoId(),
@@ -40,7 +47,7 @@ export const createBooking = asyncHandler(async (req, res) => {
     throw new ApiError(409, "These dates are not available");
   }
 
-  const totalPrice = calcTotal({
+  const pricing = calcPricing({
     pricePerNight: hotel.pricePerNight,
     cleaningFee: hotel.cleaningFee,
     nights,
@@ -57,18 +64,67 @@ export const createBooking = asyncHandler(async (req, res) => {
     },
     nights,
     pricePerNight: hotel.pricePerNight,
-    cleaningFee: hotel.cleaningFee,
-    totalPrice,
+    cleaningFee: pricing.cleaningFee,
+    serviceFee: pricing.serviceFee,
+    tax: pricing.tax,
+    totalPrice: pricing.totalPrice,
+    cancellationPolicy: hotel.cancellationPolicy || "moderate",
     specialRequests: specialRequests || "",
-    status: "confirmed",
+    status: "pending",
+    paymentStatus: "unpaid",
   });
 
   const populated = await booking.populate([
-    { path: "hotel", select: "title city country images pricePerNight" },
+    {
+      path: "hotel",
+      select: "title city country images pricePerNight cancellationPolicy",
+    },
     { path: "guest", select: "name email" },
   ]);
 
   res.status(201).json({ success: true, data: { booking: populated } });
+});
+
+export const payBooking = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id).populate("hotel").populate("guest");
+  if (!booking) throw new ApiError(404, "Booking not found");
+
+  if (booking.guest._id.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "Not allowed to pay for this booking");
+  }
+
+  if (booking.paymentStatus === "paid") {
+    throw new ApiError(400, "Booking is already paid");
+  }
+
+  if (booking.status === "cancelled") {
+    throw new ApiError(400, "Cancelled bookings cannot be paid");
+  }
+
+  const cardNumber = String(req.body.cardNumber || "").replace(/\s+/g, "");
+  if (cardNumber.length < 12) {
+    throw new ApiError(400, "Enter a mock card number (12+ digits)");
+  }
+
+  // Simulated payment processor
+  booking.paymentStatus = "paid";
+  booking.status = "confirmed";
+  booking.paymentRef = `mock_${crypto.randomBytes(6).toString("hex")}`;
+  await booking.save();
+
+  const emailResult = await sendBookingConfirmation({
+    to: booking.guest.email,
+    booking,
+    hotel: booking.hotel,
+  });
+
+  res.json({
+    success: true,
+    data: {
+      booking,
+      email: emailResult,
+    },
+  });
 });
 
 export const myBookings = asyncHandler(async (req, res) => {
@@ -118,10 +174,26 @@ export const cancelBooking = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cannot cancel a stay that has already started");
   }
 
+  const { refundAmount, refundPercent } = refundForCancel({
+    totalPrice: booking.totalPrice,
+    checkIn: booking.checkIn,
+    policy: booking.cancellationPolicy || booking.hotel?.cancellationPolicy || "moderate",
+  });
+
   booking.status = "cancelled";
+  booking.refundAmount = refundAmount;
+  if (booking.paymentStatus === "paid" && refundAmount > 0) {
+    booking.paymentStatus = refundPercent === 100 ? "refunded" : "paid";
+  }
   await booking.save();
 
-  res.json({ success: true, data: { booking } });
+  res.json({
+    success: true,
+    data: {
+      booking,
+      refund: { refundAmount, refundPercent },
+    },
+  });
 });
 
 function startOfToday() {

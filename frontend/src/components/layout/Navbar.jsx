@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HiOutlineBookmark, HiOutlineMenuAlt3, HiOutlineX } from "react-icons/hi";
 import { useAuth } from "../../hooks/useAuth";
+import { useLocale } from "../../context/LocaleContext";
 import "./Navbar.css";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { t, locale, toggle } = useLocale();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -24,8 +26,8 @@ export default function Navbar() {
     };
   }, [open]);
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     setOpen(false);
     navigate("/");
   }
@@ -40,34 +42,50 @@ export default function Navbar() {
 
         <nav className={`nav__links ${open ? "nav__links--open" : ""}`}>
           <NavLink to="/search" onClick={() => setOpen(false)}>
-            Explore
+            {t("explore")}
           </NavLink>
           <NavLink to="/bookmarks" onClick={() => setOpen(false)}>
-            <HiOutlineBookmark /> Saved
+            <HiOutlineBookmark /> {t("saved")}
           </NavLink>
           <NavLink to="/bookings" onClick={() => setOpen(false)}>
-            Trips
+            {t("trips")}
           </NavLink>
+          <NavLink to="/messages" onClick={() => setOpen(false)}>
+            {t("messages")}
+          </NavLink>
+          {user?.role === "host" || user?.role === "admin" ? (
+            <NavLink to="/host" onClick={() => setOpen(false)}>
+              {t("host")}
+            </NavLink>
+          ) : null}
+          {user?.role === "admin" ? (
+            <NavLink to="/admin" onClick={() => setOpen(false)}>
+              {t("admin")}
+            </NavLink>
+          ) : null}
+          <button className="btn btn--ghost" type="button" onClick={toggle}>
+            {locale === "en" ? "FA" : "EN"}
+          </button>
           {isAuthenticated ? (
             <>
               <NavLink to="/profile" onClick={() => setOpen(false)}>
                 {user?.name?.split(" ")[0] || "Profile"}
               </NavLink>
               <button className="btn btn--ghost" type="button" onClick={handleLogout}>
-                Log out
+                {t("logout")}
               </button>
             </>
           ) : (
             <>
               <NavLink to="/login" onClick={() => setOpen(false)}>
-                Log in
+                {t("login")}
               </NavLink>
               <Link
                 className="btn btn--primary"
                 to="/register"
                 onClick={() => setOpen(false)}
               >
-                Sign up
+                {t("signup")}
               </Link>
             </>
           )}

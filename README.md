@@ -11,15 +11,21 @@ cove-booking/
 
 ## Features
 
-- Auth: register / login / JWT / profile update
-- Hotel search: city, dates, guests, price, property type
-- Availability checks (server-side booking conflicts)
-- Reserve stays with pricing breakdown
-- Cancel upcoming bookings
-- Bookmarks (saved stays)
-- Reviews + rating averages
-- Map view (Leaflet)
-- Seeded demo data
+### Auth
+- Access + refresh JWT in **httpOnly cookies** (`cove_access`, `cove_refresh`)
+- Refresh rotation, logout revocation, axios auto-refresh on 401
+
+### Booking product
+- Hotel search (city, dates, guests, price, type, **near-me / radius**)
+- Availability calendar + conflict checks
+- Reserve → **mock pay** → confirmation **email** (Ethereal in dev)
+- Cancel with **flexible / moderate / strict** refund rules
+- Service fee + tax breakdown
+- Bookmarks + **shareable wishlist**
+- Guest ↔ host **messaging**
+- Host dashboard (create/edit/upload images)
+- Admin panel
+- EN/FA locale toggle (RTL for FA)
 
 ## Quick start
 
@@ -63,24 +69,46 @@ npm run dev
 | Host  | host@cove.dev    | password123   |
 | Admin | admin@cove.dev   | password123   |
 
-## API overview
+## Auth cookie flow
 
-| Method | Path | Auth |
-|--------|------|------|
-| POST | `/api/auth/register` | — |
-| POST | `/api/auth/login` | — |
-| GET | `/api/auth/me` | JWT |
-| GET | `/api/hotels` | — |
-| GET | `/api/hotels/:id` | — |
-| GET | `/api/hotels/:id/availability` | — |
-| POST | `/api/bookings` | JWT |
-| GET | `/api/bookings/me` | JWT |
-| PATCH | `/api/bookings/:id/cancel` | JWT |
-| GET/POST/DELETE | `/api/bookmarks` | JWT |
-| GET/POST | `/api/hotels/:id/reviews` | JWT for write |
+1. `POST /api/auth/login|register` sets `cove_access` (15m) + `cove_refresh` (7d)
+2. Protected routes read access cookie (Bearer also supported)
+3. `POST /api/auth/refresh` rotates refresh token
+4. Frontend uses `withCredentials` and retries once after refresh on 401
+
+## Deploy notes (portfolio)
+
+Suggested free-tier layout:
+
+- **MongoDB Atlas** → connection string in `MONGODB_URI`
+- **Backend** → Render / Railway / Fly.io  
+  Set `NODE_ENV=production`, `CLIENT_URL`, `JWT_SECRET`, cookie `secure` + `sameSite=none`
+- **Frontend** → Vercel / Netlify  
+  Proxy or set `VITE_API_URL` to the API origin  
+  Enable HTTPS so Secure cookies work
+
+Optional SMTP:
+
+```
+SMTP_HOST=...
+SMTP_PORT=587
+SMTP_USER=...
+SMTP_PASS=...
+```
+
+Without SMTP, confirmation emails use Ethereal test accounts (preview URL in API logs).
+
+## Scripts
+
+```bash
+npm run test --prefix backend          # unit
+npm run test:integration --prefix backend  # needs API up
+npm run lint --prefix frontend
+npm run build --prefix frontend
+```
 
 ## Stack
 
-**Frontend:** React 18, Vite, React Router, Axios, Leaflet, date-fns  
-**Backend:** Express, Mongoose, JWT, bcrypt, express-validator  
+**Frontend:** React 18, Vite, React Router, Axios, Leaflet  
+**Backend:** Express, Mongoose, JWT cookies, bcrypt, multer, nodemailer, rate-limit  
 **Database:** MongoDB

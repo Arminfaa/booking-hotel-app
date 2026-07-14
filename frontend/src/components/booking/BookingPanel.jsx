@@ -6,6 +6,9 @@ import { useAuth } from "../../hooks/useAuth";
 import { formatMoney, nightsBetween, toInputDate } from "../../utils/format";
 import "./BookingPanel.css";
 
+const SERVICE_PCT = 10;
+const TAX_PCT = 8;
+
 export default function BookingPanel({ hotel, initial = {} }) {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -23,7 +26,10 @@ export default function BookingPanel({ hotel, initial = {} }) {
     [checkIn, checkOut]
   );
   const lodging = nights * hotel.pricePerNight;
-  const total = lodging + (hotel.cleaningFee || 0);
+  const cleaning = hotel.cleaningFee || 0;
+  const serviceFee = Math.round((lodging * SERVICE_PCT) / 100);
+  const tax = Math.round(((lodging + cleaning + serviceFee) * TAX_PCT) / 100);
+  const total = lodging + cleaning + serviceFee + tax;
 
   async function handleBook(e) {
     e.preventDefault();
@@ -51,7 +57,7 @@ export default function BookingPanel({ hotel, initial = {} }) {
         guests: { adults, children },
         specialRequests,
       });
-      toast.success("Stay reserved");
+      toast.success("Continue to payment");
       navigate(`/bookings/${res.data.booking._id}`);
     } catch (err) {
       toast.error(err.message);
@@ -65,6 +71,9 @@ export default function BookingPanel({ hotel, initial = {} }) {
       <p className="booking-panel__price">
         <strong>{formatMoney(hotel.pricePerNight)}</strong>
         <span> / night</span>
+      </p>
+      <p className="booking-panel__policy">
+        Cancellation: <strong>{hotel.cancellationPolicy || "moderate"}</strong>
       </p>
       <form onSubmit={handleBook} className="booking-panel__form">
         <div className="booking-panel__dates">
@@ -135,7 +144,15 @@ export default function BookingPanel({ hotel, initial = {} }) {
           </div>
           <div>
             <span>Cleaning fee</span>
-            <strong>{formatMoney(hotel.cleaningFee || 0)}</strong>
+            <strong>{formatMoney(cleaning)}</strong>
+          </div>
+          <div>
+            <span>Service fee ({SERVICE_PCT}%)</span>
+            <strong>{formatMoney(serviceFee)}</strong>
+          </div>
+          <div>
+            <span>Taxes ({TAX_PCT}%)</span>
+            <strong>{formatMoney(tax)}</strong>
           </div>
           <div className="booking-panel__total">
             <span>Total</span>
@@ -144,7 +161,11 @@ export default function BookingPanel({ hotel, initial = {} }) {
         </div>
 
         <button className="btn btn--primary" type="submit" disabled={loading}>
-          {loading ? "Reserving..." : isAuthenticated ? "Reserve stay" : "Log in to reserve"}
+          {loading
+            ? "Creating..."
+            : isAuthenticated
+              ? "Reserve & pay"
+              : "Log in to reserve"}
         </button>
       </form>
     </aside>

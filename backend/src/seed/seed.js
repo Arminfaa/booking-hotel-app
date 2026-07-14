@@ -5,8 +5,10 @@ import { Hotel } from "../models/Hotel.js";
 import { Booking } from "../models/Booking.js";
 import { Review } from "../models/Review.js";
 import { Bookmark } from "../models/Bookmark.js";
+import { RefreshToken } from "../models/RefreshToken.js";
+import { Conversation, Message } from "../models/Message.js";
 import { seedHotels, seedUsers } from "./data.js";
-import { calcTotal, nightsBetween } from "../utils/booking.js";
+import { calcPricing, nightsBetween } from "../utils/booking.js";
 
 async function seed() {
   await connectDB();
@@ -18,6 +20,9 @@ async function seed() {
     Booking.deleteMany({}),
     Review.deleteMany({}),
     Bookmark.deleteMany({}),
+    RefreshToken.deleteMany({}),
+    Conversation.deleteMany({}),
+    Message.deleteMany({}),
   ]);
 
   console.log("Creating users...");
@@ -29,12 +34,14 @@ async function seed() {
   const guest = users.find((u) => u.role === "guest");
 
   console.log("Creating hotels...");
+  const policies = ["flexible", "moderate", "strict"];
   const hotels = [];
-  for (const h of seedHotels) {
+  for (const [index, h] of seedHotels.entries()) {
     const { longitude, latitude, ...rest } = h;
     hotels.push(
       await Hotel.create({
         ...rest,
+        cancellationPolicy: policies[index % policies.length],
         location: { type: "Point", coordinates: [longitude, latitude] },
         host: host._id,
       })
@@ -47,6 +54,11 @@ async function seed() {
   checkOut.setDate(checkOut.getDate() + 3);
   const nights = nightsBetween(checkIn, checkOut);
   const sampleHotel = hotels[0];
+  const pricing = calcPricing({
+    pricePerNight: sampleHotel.pricePerNight,
+    cleaningFee: sampleHotel.cleaningFee,
+    nights,
+  });
 
   const booking = await Booking.create({
     hotel: sampleHotel._id,
@@ -56,13 +68,14 @@ async function seed() {
     guests: { adults: 2, children: 0 },
     nights,
     pricePerNight: sampleHotel.pricePerNight,
-    cleaningFee: sampleHotel.cleaningFee,
-    totalPrice: calcTotal({
-      pricePerNight: sampleHotel.pricePerNight,
-      cleaningFee: sampleHotel.cleaningFee,
-      nights,
-    }),
+    cleaningFee: pricing.cleaningFee,
+    serviceFee: pricing.serviceFee,
+    tax: pricing.tax,
+    totalPrice: pricing.totalPrice,
+    cancellationPolicy: sampleHotel.cancellationPolicy,
     status: "confirmed",
+    paymentStatus: "paid",
+    paymentRef: "mock_seeded",
     specialRequests: "Late check-in around 9pm",
   });
 
