@@ -9,7 +9,7 @@ export default function Loader({ label = "Loading...", fullPage = true }) {
       gap="middle"
       className={
         fullPage
-          ? "w-full min-h-[calc(100dvh-185px)] lg:min-h-[calc(100dvh-185px)]"
+          ? "w-full min-h-[calc(100dvh-75px)] lg:min-h-[calc(100dvh-185px)]"
           : "w-full min-h-[42dvh]"
       }
       role="status"
