@@ -78,14 +78,26 @@ npm run dev
 
 ## Deploy notes (portfolio)
 
-Suggested free-tier layout:
+**Important:** Auth uses HttpOnly cookies. If the frontend and API are on different domains (e.g. Vercel + Render), Safari and mobile browsers often block those cookies. **Proxy `/api` through Vercel** so requests stay same-origin.
 
-- **MongoDB Atlas** → connection string in `MONGODB_URI`
-- **Backend** → Render / Railway / Fly.io  
-  Set `NODE_ENV=production`, `CLIENT_URL`, `JWT_SECRET`, cookie `secure` + `sameSite=none`
-- **Frontend** → Vercel / Netlify  
-  Proxy or set `VITE_API_URL` to the API origin  
-  Enable HTTPS so Secure cookies work
+### Vercel (frontend)
+
+1. **Remove** `VITE_API_URL` from Vercel env (leave unset so the app uses `/api`).
+2. Set `BACKEND_ORIGIN=https://cove-booking.onrender.com` (or your Render URL).
+3. Build runs `scripts/generate-vercel-config.mjs` → proxies `/api` and `/uploads` to Render.
+4. Custom domain example: `https://getcoveapp.vercel.app`
+
+### Render (backend)
+
+- `NODE_ENV=production`
+- `CLIENT_URL=https://getcoveapp.vercel.app` (comma-separate preview URLs if needed)
+- `JWT_SECRET`, `MONGODB_URI`, Cloudinary vars
+
+### MongoDB Atlas
+
+Connection string in `MONGODB_URI`.
+
+After changing env vars, **redeploy both** Vercel and Render, then log in again (old cross-origin cookies are invalid).
 
 Optional SMTP:
 
