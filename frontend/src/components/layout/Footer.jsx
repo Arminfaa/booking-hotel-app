@@ -8,9 +8,17 @@ export default function Footer() {
       <div className={tw.container}>
         <Row gutter={[32, 24]} align="middle" justify="space-between">
           <Col xs={24} md={10}>
-            <Typography.Title level={3} className="!mb-1.5 !text-sea">
-              Cove
-            </Typography.Title>
+            <Link to="/" className="mb-1.5 inline-flex items-center gap-2.5">
+              <img
+                src="/images/cove-logo.webp"
+                alt=""
+                className="size-9 shrink-0 object-contain"
+                aria-hidden
+              />
+              <Typography.Title level={3} className="!mb-0 !text-sea">
+                Cove
+              </Typography.Title>
+            </Link>
             <Typography.Paragraph type="secondary" className="!m-0 max-w-sm">
               Distinctive stays, booked with clarity.
             </Typography.Paragraph>
