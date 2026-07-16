@@ -171,7 +171,7 @@ export default function Navbar() {
               className="size-7 shrink-0 object-contain sm:size-8"
               aria-hidden
             />
-            <Typography.Text className="hidden truncate !font-display !text-[1.45rem] !font-bold !tracking-tight !text-ink lg:inline">
+            <Typography.Text className="truncate !font-display !text-[1.2rem] !font-bold !tracking-tight !text-ink sm:!text-[1.45rem]">
               Cove
             </Typography.Text>
           </Link>
