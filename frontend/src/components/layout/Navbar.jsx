@@ -165,11 +165,13 @@ export default function Navbar() {
       <div className={`${tw.container} flex h-full items-center justify-between gap-2 sm:gap-4`}>
         <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6 lg:flex-none">
           <Link to="/" className="inline-flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
-            <span
-              className="size-[0.85rem] shrink-0 animate-[markPulse_4s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle_at_30%_30%,#b8f0de,#5ec4a8_50%,#1a3d45)] sm:size-[0.95rem]"
+            <img
+              src="/images/cove-logo.webp"
+              alt=""
+              className="size-7 shrink-0 object-contain sm:size-8"
               aria-hidden
             />
-            <Typography.Text className="truncate !font-display !text-[1.2rem] !font-bold !tracking-tight !text-ink sm:!text-[1.45rem]">
+            <Typography.Text className="hidden truncate !font-display !text-[1.45rem] !font-bold !tracking-tight !text-ink lg:inline">
               Cove
             </Typography.Text>
           </Link>
@@ -209,9 +211,17 @@ export default function Navbar() {
 
       <Drawer
         title={
-          <span className="font-display text-[1.35rem] font-bold tracking-tight text-ink sm:text-[1.45rem]">
-            Cove
-          </span>
+          <Link to="/" className="inline-flex items-center gap-2.5" onClick={() => setOpen(false)}>
+            <img
+              src="/images/cove-logo.webp"
+              alt=""
+              className="size-7 object-contain"
+              aria-hidden
+            />
+            <span className="font-display text-[1.35rem] font-bold tracking-tight text-ink sm:text-[1.45rem]">
+              Cove
+            </span>
+          </Link>
         }
         placement="right"
         open={open}
