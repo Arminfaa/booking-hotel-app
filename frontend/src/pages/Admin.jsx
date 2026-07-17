@@ -9,7 +9,7 @@ import { formatMoney } from "../utils/format";
 import { tw } from "../styles/tw";
 
 export default function Admin() {
-  const { user } = useAuth();
+  const { user, booting } = useAuth();
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
   const [users, setUsers] = useState([]);
@@ -17,19 +17,30 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (booting) return;
     if (user?.role !== "admin") {
       navigate("/");
       return;
     }
+    let alive = true;
+    setLoading(true);
     Promise.all([adminApi.overview(), adminApi.users(), adminApi.hotels()])
       .then(([o, u, h]) => {
+        if (!alive) return;
         setOverview(o.data);
         setUsers(u.data.users);
         setHotels(h.data.hotels);
       })
-      .catch((err) => toast.error(err.message))
-      .finally(() => setLoading(false));
-  }, [user, navigate]);
+      .catch((err) => {
+        if (alive) toast.error(err.message);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user, booting, navigate]);
 
   async function setRole(id, role) {
     try {
@@ -52,7 +63,7 @@ export default function Admin() {
     }
   }
 
-  if (loading) return <Loader label="Loading admin..." />;
+  if (booting || loading) return <Loader label="Loading admin..." />;
 
   return (
     <div className={tw.page}>

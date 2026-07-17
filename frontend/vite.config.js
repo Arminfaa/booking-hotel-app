@@ -4,6 +4,18 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          leaflet: ["leaflet", "react-leaflet"],
+          query: ["@tanstack/react-query"],
+          axios: ["axios"],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

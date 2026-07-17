@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
@@ -22,6 +23,7 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+app.use(compression());
 app.use(
   cors({
     origin(origin, callback) {

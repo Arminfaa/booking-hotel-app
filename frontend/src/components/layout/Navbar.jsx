@@ -35,7 +35,7 @@ function authLinkClass(active) {
 }
 
 export default function Navbar() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, booting, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -74,7 +74,14 @@ export default function Navbar() {
     navigate("/");
   }
 
-  const desktopAuthActions = isAuthenticated ? (
+  const desktopAuthActions = booting ? (
+    <span
+      className="inline-block min-w-[4.5rem] text-center text-ink-soft opacity-50"
+      aria-hidden
+    >
+      …
+    </span>
+  ) : isAuthenticated ? (
     <>
       <Link
         to="/profile"
@@ -107,7 +114,13 @@ export default function Navbar() {
     </>
   );
 
-  const drawerAuthActions = isAuthenticated ? (
+  const drawerAuthActions = booting ? (
+    <div className="nav-drawer-auth">
+      <span className="px-1 py-2 text-ink-soft opacity-50" aria-hidden>
+        …
+      </span>
+    </div>
+  ) : isAuthenticated ? (
     <div className="nav-drawer-auth">
       <Link
         to="/profile"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Typography } from "antd";
 import { ShareAltOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
@@ -6,27 +6,21 @@ import { bookmarksApi } from "../api";
 import HotelCard from "../components/hotels/HotelCard";
 import EmptyState from "../components/ui/EmptyState";
 import Loader from "../components/ui/Loader";
+import { useAuth } from "../hooks/useAuth";
 import { tw } from "../styles/tw";
 
 export default function Bookmarks() {
-  const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { booting, isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    let alive = true;
-    bookmarksApi
-      .list()
-      .then((res) => {
-        if (alive) setBookmarks(res.data.bookmarks);
-      })
-      .catch((err) => toast.error(err.message))
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["bookmarks"],
+    queryFn: () => bookmarksApi.list(),
+    enabled: booting || isAuthenticated,
+    retry: (count, err) => (err?.status === 401 ? false : count < 1),
+  });
+
+  const bookmarks = data?.data?.bookmarks ?? [];
+  const loading = (booting && !data) || (isLoading && !data);
 
   async function shareWishlist() {
     try {

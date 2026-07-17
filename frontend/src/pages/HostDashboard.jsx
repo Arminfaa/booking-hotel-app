@@ -101,7 +101,7 @@ function handleFormError(form, err) {
 }
 
 export default function HostDashboard() {
-  const { user } = useAuth();
+  const { user, booting } = useAuth();
   const navigate = useNavigate();
   const { hotelId } = useParams();
   const [hotels, setHotels] = useState([]);
@@ -130,6 +130,7 @@ export default function HostDashboard() {
   }
 
   useEffect(() => {
+    if (booting) return;
     if (user?.role !== "host" && user?.role !== "admin") {
       navigate("/");
       return;
@@ -156,7 +157,7 @@ export default function HostDashboard() {
     return () => {
       alive = false;
     };
-  }, [user, hotelId, navigate, form]);
+  }, [user, booting, hotelId, navigate, form]);
 
   function fillForm(hotel) {
     form.setFieldsValue({
@@ -256,7 +257,7 @@ export default function HostDashboard() {
     }
   }
 
-  if (loading) return <Loader label="Loading host dashboard..." />;
+  if (booting || loading) return <Loader label="Loading host dashboard..." />;
 
   return (
     <div className={tw.page}>

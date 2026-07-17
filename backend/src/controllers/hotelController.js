@@ -176,7 +176,17 @@ export const listHotels = asyncHandler(async (req, res) => {
     };
   }
 
-  let queryBuilder = Hotel.find(filter).populate("host", "name avatar");
+  let queryBuilder = req.query.q
+    ? Hotel.find(filter, { score: { $meta: "textScore" } })
+    : Hotel.find(filter);
+
+  const listSelect =
+    "title city country images pricePerNight ratingAverage ratingCount propertyType location host maxGuests bedrooms bathrooms beds createdAt";
+
+  queryBuilder = queryBuilder
+    .select(listSelect)
+    .populate("host", "name avatar")
+    .lean();
 
   if (!useGeo) {
     queryBuilder = queryBuilder.sort(
@@ -195,13 +205,19 @@ export const listHotels = asyncHandler(async (req, res) => {
     ),
   ]);
 
+  // Card payloads only need the cover image — trim the rest for faster JSON.
+  const trimmed = hotels.map((hotel) => ({
+    ...hotel,
+    images: Array.isArray(hotel.images) ? hotel.images.slice(0, 1) : [],
+  }));
+
   // For geo queries countDocuments with $near is unsupported; approximate with result length on page 1
-  const counted = useGeo ? hotels.length + skip : total;
+  const counted = useGeo ? trimmed.length + skip : total;
 
   res.json({
     success: true,
     data: {
-      hotels,
+      hotels: trimmed,
       pagination: {
         page,
         limit,

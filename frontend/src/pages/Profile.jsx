@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, Button, Card, Form, Input, Space, Typography, Upload } from "antd";
 import { UploadOutlined, UserOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { authApi, uploadsApi } from "../api";
 import { useAuth } from "../hooks/useAuth";
+import Loader from "../components/ui/Loader";
 import { tw } from "../styles/tw";
 
 export default function Profile() {
-  const { user, refreshProfile } = useAuth();
+  const { user, booting, refreshProfile } = useAuth();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "");
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    setAvatarUrl(user.avatar || "");
+    form.setFieldsValue({
+      name: user.name || "",
+      phone: user.phone || "",
+      avatar: user.avatar || "",
+    });
+  }, [user, form]);
 
   async function onFinish(values) {
     setLoading(true);
@@ -41,6 +52,8 @@ export default function Profile() {
     return false;
   }
 
+  if (booting && !user) return <Loader label="Loading profile..." />;
+
   return (
     <div className={`${tw.page} grid min-h-[calc(100dvh-4.25rem-8rem)] items-center`}>
       <div className={`${tw.container} max-w-[460px]`}>
@@ -59,11 +72,6 @@ export default function Profile() {
             layout="vertical"
             size="large"
             onFinish={onFinish}
-            initialValues={{
-              name: user?.name || "",
-              phone: user?.phone || "",
-              avatar: user?.avatar || "",
-            }}
             requiredMark={false}
           >
             <Form.Item label="Profile photo">

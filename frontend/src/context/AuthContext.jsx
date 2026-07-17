@@ -9,22 +9,27 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let alive = true;
-    async function boot() {
-      try {
-        const res = await authApi.me();
+
+    // Single call: axios 401 interceptor refreshes + retries /auth/me.
+    // Avoids sequential me → refresh waterfall.
+    authApi
+      .me()
+      .then((res) => {
         if (alive) setUser(res.data.user);
-      } catch {
-        try {
-          const refreshed = await authApi.refresh();
-          if (alive) setUser(refreshed.data.user);
-        } catch {
-          if (alive) setUser(null);
-        }
-      } finally {
+      })
+      .catch(() => {
+        if (alive) setUser(null);
+      })
+      .finally(() => {
         if (alive) setBooting(false);
-      }
-    }
-    boot();
+      });
+
+    // Wake Render / API while the shell paints (cold-start mitigation).
+    fetch(`${import.meta.env.VITE_API_URL || "/api"}/health`, {
+      credentials: "include",
+      cache: "no-store",
+    }).catch(() => {});
+
     return () => {
       alive = false;
     };

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Col, InputNumber, Pagination, Row, Select, Typography } from "antd";
 import { EnvironmentOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
@@ -7,7 +8,7 @@ import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
 import HotelCard from "../components/hotels/HotelCard";
 import { HotelCardSkeletonGrid } from "../components/hotels/HotelCardSkeleton";
-import HotelMap from "../components/hotels/HotelMap";
+import HotelMapLazy from "../components/hotels/HotelMapLazy";
 import EmptyState from "../components/ui/EmptyState";
 import { tw } from "../styles/tw";
 
@@ -15,10 +16,6 @@ const PAGE_SIZE = 10;
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [hotels, setHotels] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, limit: PAGE_SIZE, total: 0, pages: 1 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
 
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
@@ -39,35 +36,26 @@ export default function Search() {
     [searchParams]
   );
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    setError("");
-    const params = Object.fromEntries(
-      Object.entries(filters).filter(([, v]) => v !== "" && v != null)
-    );
+  const listParams = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v !== "" && v != null)
+      ),
+    [filters]
+  );
 
-    hotelsApi
-      .list({ ...params, page, limit: PAGE_SIZE })
-      .then((res) => {
-        if (!alive) return;
-        setHotels(res.data.hotels);
-        setPagination(res.data.pagination);
-      })
-      .catch((err) => {
-        if (!alive) return;
-        setError(err.message);
-        setHotels([]);
-        setPagination({ page: 1, limit: PAGE_SIZE, total: 0, pages: 1 });
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["hotels", "search", listParams, page],
+    queryFn: () => hotelsApi.list({ ...listParams, page, limit: PAGE_SIZE }),
+  });
 
-    return () => {
-      alive = false;
-    };
-  }, [filters, page]);
+  const hotels = data?.data?.hotels ?? [];
+  const pagination = data?.data?.pagination ?? {
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    pages: 1,
+  };
 
   function nearMe() {
     if (!navigator.geolocation) {
@@ -205,8 +193,8 @@ export default function Search() {
         </div>
 
         {error ? (
-          <EmptyState title="Could not load stays" message={error} />
-        ) : !loading && hotels.length === 0 ? (
+          <EmptyState title="Could not load stays" message={error.message} />
+        ) : !isLoading && hotels.length === 0 ? (
           <EmptyState
             title="No stays match"
             message="Try another city, wider dates, or fewer filters."
@@ -214,7 +202,7 @@ export default function Search() {
         ) : (
           <Row gutter={[28, 28]}>
             <Col xs={24} lg={14} xl={15}>
-              {loading ? (
+              {isLoading ? (
                 <HotelCardSkeletonGrid count={10} className="mt-4" />
               ) : (
                 <>
@@ -251,7 +239,7 @@ export default function Search() {
               <div
                 className={`${tw.surface} sticky top-[calc(4.25rem+1rem)] overflow-hidden p-1.5 max-lg:static [&_.leaflet-container]:rounded-[14px]`}
               >
-                <HotelMap hotels={loading ? [] : hotels} height={620} />
+                <HotelMapLazy hotels={isLoading ? [] : hotels} height={620} />
               </div>
             </Col>
           </Row>

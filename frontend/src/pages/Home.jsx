@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Button, Col, Row, Space, Typography } from "antd";
 import { ArrowRightOutlined } from "@ant-design/icons";
@@ -6,41 +6,30 @@ import { hotelsApi } from "../api";
 import SearchBar from "../components/hotels/SearchBar";
 import HotelCard from "../components/hotels/HotelCard";
 import { HotelCardSkeletonGrid } from "../components/hotels/HotelCardSkeleton";
+import { heroImageUrl } from "../utils/images";
 import { tw } from "../styles/tw";
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1501117716987-c8e1ecb210d6?w=1800&q=80";
+const HERO_SRC = heroImageUrl(1600);
 
 export default function Home() {
-  const [hotels, setHotels] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: ["hotels", "featured"],
+    queryFn: () => hotelsApi.list({ limit: 8 }),
+  });
 
-  useEffect(() => {
-    let alive = true;
-    hotelsApi
-      .list({ limit: 8 })
-      .then((res) => {
-        if (alive) setHotels(res.data.hotels);
-      })
-      .catch(() => {
-        if (alive) setHotels([]);
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const hotels = data?.data?.hotels ?? [];
 
   return (
     <div className={tw.pageFlush}>
       <section className="relative grid min-h-[calc(100dvh-3.5rem)] items-center overflow-hidden text-white lg:min-h-[calc(100dvh-4.25rem)]">
-        <div
-          className="absolute inset-0 animate-[fade_0.85s_ease_both] bg-cover bg-center [animation:heroZoom_18s_ease-in-out_alternate_infinite]"
-          style={{ backgroundImage: `url(${HERO_IMAGE})` }}
-          role="img"
-          aria-label="Sunlit stay overlooking water"
+        <img
+          className="absolute inset-0 size-full animate-[fade_0.85s_ease_both] object-cover [animation:heroZoom_18s_ease-in-out_alternate_infinite]"
+          src={HERO_SRC}
+          srcSet={`${heroImageUrl(800)} 800w, ${heroImageUrl(1200)} 1200w, ${heroImageUrl(1600)} 1600w`}
+          sizes="100vw"
+          alt="Sunlit stay overlooking water"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,10,16,0.35)_0%,rgba(5,10,16,0.55)_42%,rgba(5,10,16,0.88)_100%),linear-gradient(90deg,rgba(5,10,16,0.55)_0%,transparent_55%)]" />
         <div className={`${tw.container} relative z-1 max-w-[960px] py-14 pb-12`}>
@@ -82,7 +71,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {loading ? (
+          {isLoading ? (
             <HotelCardSkeletonGrid count={8} />
           ) : (
             <div className={tw.hotelGrid}>
