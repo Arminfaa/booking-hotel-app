@@ -120,6 +120,9 @@ const hotelSchema = new mongoose.Schema(
 
 hotelSchema.index({ location: "2dsphere" });
 hotelSchema.index({ city: "text", country: "text", title: "text", description: "text" });
+hotelSchema.index({ host: 1, createdAt: -1 });
+hotelSchema.index({ isPublished: 1, createdAt: -1 });
+hotelSchema.index({ isPublished: 1, city: 1, pricePerNight: 1 });
 
 hotelSchema.virtual("smartLocation").get(function smartLocation() {
   return `${this.city}, ${this.country}`;

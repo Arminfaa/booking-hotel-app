@@ -5,7 +5,7 @@ import { BookOutlined, LinkOutlined, StarFilled } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import { bookmarksApi, hotelsApi, messagesApi } from "../api";
 import BookingPanel from "../components/booking/BookingPanel";
-import HotelMap from "../components/hotels/HotelMap";
+import HotelMapLazy from "../components/hotels/HotelMapLazy";
 import OccupancyCalendar from "../components/hotels/OccupancyCalendar";
 import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
@@ -224,7 +224,7 @@ export default function HotelDetail() {
             {hotel.address} · {hotel.city}, {hotel.country}
           </Typography.Paragraph>
           <div className={`${tw.surface} overflow-hidden p-2`}>
-            <HotelMap hotels={[hotel]} height={420} />
+            <HotelMapLazy hotels={[hotel]} height={420} />
           </div>
         </section>
 

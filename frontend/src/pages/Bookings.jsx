@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Button, Card, Flex, Space, Tag, Typography } from "antd";
 import toast from "react-hot-toast";
 import { bookingsApi } from "../api";
 import EmptyState from "../components/ui/EmptyState";
 import Loader from "../components/ui/Loader";
+import { useAuth } from "../hooks/useAuth";
 import { formatDisplayDate, formatMoney } from "../utils/format";
 import { tw } from "../styles/tw";
 
@@ -16,30 +17,25 @@ const statusColor = {
 };
 
 export default function Bookings() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { booting, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
-  async function load() {
-    setLoading(true);
-    try {
-      const res = await bookingsApi.mine();
-      setBookings(res.data.bookings);
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data, isLoading } = useQuery({
+    queryKey: ["bookings", "mine"],
+    queryFn: () => bookingsApi.mine(),
+    // Parallel with session boot — cookies already authenticate the request.
+    enabled: booting || isAuthenticated,
+    retry: (count, err) => (err?.status === 401 ? false : count < 1),
+  });
 
-  useEffect(() => {
-    load();
-  }, []);
+  const bookings = data?.data?.bookings ?? [];
+  const loading = (booting && !data) || (isLoading && !data);
 
   async function cancel(id) {
     try {
       await bookingsApi.cancel(id);
       toast.success("Booking cancelled");
-      load();
+      queryClient.invalidateQueries({ queryKey: ["bookings", "mine"] });
     } catch (err) {
       toast.error(err.message);
     }
@@ -75,6 +71,8 @@ export default function Bookings() {
                     className="h-40 w-[min(220px,100%)] rounded-cove-sm border border-line object-cover"
                     src={booking.hotel?.images?.[0]}
                     alt={booking.hotel?.title || "Stay"}
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="min-w-[220px] flex-1">
                     <Flex justify="space-between" gap={12} wrap>

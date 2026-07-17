@@ -2,21 +2,29 @@ import { Link } from "react-router-dom";
 import { Flex, Tag, Typography } from "antd";
 import { StarFilled } from "@ant-design/icons";
 import { formatMoney } from "../../utils/format";
+import { hotelImageProps } from "../../utils/images";
 
 export default function HotelCard({ hotel, search = "" }) {
   const image = hotel.images?.[0];
+  const img = hotelImageProps(image);
+
   return (
     <article className="grid animate-[rise_0.65s_cubic-bezier(0.22,1,0.36,1)_both] gap-3.5">
       <Link
         to={`/hotels/${hotel._id}${search}`}
         className="relative block aspect-4/3 overflow-hidden rounded-cove border border-line"
       >
-        <img
-          src={image}
-          alt={hotel.title}
-          loading="lazy"
-          className="size-full object-cover transition-transform duration-550 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105 hover:scale-105"
-        />
+        {image ? (
+          <img
+            {...img}
+            alt={hotel.title}
+            width={800}
+            height={600}
+            className="size-full object-cover transition-transform duration-550 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105 hover:scale-105"
+          />
+        ) : (
+          <div className="size-full bg-paper-2" aria-hidden />
+        )}
         <Tag className="!absolute !bottom-3 !left-3 !m-0 !border-none !bg-paper/78 !text-ink capitalize backdrop-blur-sm">
           {hotel.propertyType}
         </Tag>
