@@ -306,3 +306,25 @@
 .scrollbar-cove::-webkit-scrollbar-thumb:hover {
   background: rgba(94, 196, 168, 0.5);
 }
+
+/* Prevent iOS Safari zoom on input focus (needs >= 16px) */
+@media (max-width: 991px) {
+  input,
+  select,
+  textarea,
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-affix-wrapper input,
+  .ant-input-number,
+  .ant-input-number-input,
+  .ant-input-number-input-wrap input,
+  .ant-select-selector,
+  .ant-select-selection-search-input,
+  .ant-select-selection-item,
+  .ant-picker,
+  .ant-picker-input > input,
+  .ant-mentions textarea,
+  .ant-auto-complete input {
+    font-size: 16px !important;
+  }
+}
