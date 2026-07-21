@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
@@ -111,6 +111,32 @@ export default function HostDashboard() {
   const latitude = Form.useWatch("latitude", form);
   const longitude = Form.useWatch("longitude", form);
 
+  const fillForm = useCallback(
+    (hotel) => {
+      form.setFieldsValue({
+        title: hotel.title,
+        description: hotel.description,
+        city: hotel.city,
+        country: hotel.country,
+        address: hotel.address,
+        latitude: hotel.location?.coordinates?.[1] ?? "",
+        longitude: hotel.location?.coordinates?.[0] ?? "",
+        pricePerNight: hotel.pricePerNight,
+        cleaningFee: hotel.cleaningFee,
+        maxGuests: hotel.maxGuests,
+        bedrooms: hotel.bedrooms,
+        beds: hotel.beds,
+        bathrooms: hotel.bathrooms,
+        propertyType: hotel.propertyType,
+        cancellationPolicy: hotel.cancellationPolicy || "moderate",
+        amenities: (hotel.amenities || []).join(", "),
+        images: (hotel.images || []).join("\n"),
+        isPublished: hotel.isPublished,
+      });
+    },
+    [form]
+  );
+
   async function load(fillId = hotelId) {
     setLoading(true);
     try {
@@ -157,30 +183,7 @@ export default function HostDashboard() {
     return () => {
       alive = false;
     };
-  }, [user, booting, hotelId, navigate, form]);
-
-  function fillForm(hotel) {
-    form.setFieldsValue({
-      title: hotel.title,
-      description: hotel.description,
-      city: hotel.city,
-      country: hotel.country,
-      address: hotel.address,
-      latitude: hotel.location?.coordinates?.[1] ?? "",
-      longitude: hotel.location?.coordinates?.[0] ?? "",
-      pricePerNight: hotel.pricePerNight,
-      cleaningFee: hotel.cleaningFee,
-      maxGuests: hotel.maxGuests,
-      bedrooms: hotel.bedrooms,
-      beds: hotel.beds,
-      bathrooms: hotel.bathrooms,
-      propertyType: hotel.propertyType,
-      cancellationPolicy: hotel.cancellationPolicy || "moderate",
-      amenities: (hotel.amenities || []).join(", "),
-      images: (hotel.images || []).join("\n"),
-      isPublished: hotel.isPublished,
-    });
-  }
+  }, [user, booting, hotelId, navigate, form, fillForm]);
 
   async function onUpload(file) {
     try {

@@ -9,6 +9,9 @@ on:
 jobs:
   backend-unit:
     runs-on: ubuntu-latest
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/cove-ci
+      JWT_SECRET: ci-test-secret-not-for-production
     defaults:
       run:
         working-directory: backend
