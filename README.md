@@ -14,6 +14,7 @@ cove-booking/
 ### Auth
 - Access + refresh JWT in **httpOnly cookies** (`cove_access`, `cove_refresh`)
 - Refresh rotation, logout revocation, axios auto-refresh on 401
+- Optimized session restore: protected pages mount immediately while `/api/auth/me` is checked (so data loads in parallel)
 
 ### Booking product
 - Hotel search (city, dates, guests, price, type, **near-me / radius**)
@@ -76,6 +77,16 @@ npm run dev
 3. `POST /api/auth/refresh` rotates refresh token
 4. Frontend uses `withCredentials` and retries once after refresh on 401
 
+## Performance improvements (web-app focused)
+
+- **Parallel auth + page data:** auth boot no longer blocks the whole shell; protected route content can load while session restore runs.
+- **Lazy loading:** main routes are code-split, and the **Leaflet map** loads only on Search/Hotel Detail pages.
+- **Client caching:** uses **React Query** for Home/Search/Bookings/Bookmarks so repeat navigation feels instant.
+- **Smaller API payloads:** hotel list endpoints return projected fields only (and `.lean()`), plus only the first image for cards.
+- **Faster responses from API:** backend enables **gzip compression**.
+- **Cold-start mitigation:** frontend warms the backend via `GET /api/health` on boot (helps on Render).
+- **Mobile UX:** under `max-width: 991px` all inputs/selects (including Ant Design controls) use `font-size: 16px` to prevent iOS Safari auto-zoom.
+
 ## Deploy notes (portfolio)
 
 **Important:** Auth uses HttpOnly cookies. If the frontend and API are on different domains (e.g. Vercel + Render), Safari and mobile browsers often block those cookies. **Proxy `/api` through Vercel** so requests stay same-origin.
@@ -121,6 +132,6 @@ npm run build --prefix frontend
 
 ## Stack
 
-**Frontend:** React 18, Vite, React Router, Axios, Leaflet  
-**Backend:** Express, Mongoose, JWT cookies, bcrypt, multer, nodemailer, rate-limit  
+**Frontend:** React 18, Vite, React Router, Axios, Leaflet, **React Query**  
+**Backend:** Express, Mongoose, JWT cookies, bcrypt, multer, nodemailer, rate-limit, **compression**  
 **Database:** MongoDB
